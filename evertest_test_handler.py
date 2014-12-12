@@ -143,58 +143,6 @@ def evertestGetNumber(testname):
 # EOF evertestGetNumber
 # -------------------------------------------------------------------------------------
 
-		##### Whole part after here could be removed caused by import of "import from evertest_netcfg *"
-
-#--------------------------------------------------------------------------------------
-# Parse vmName to ip-API
-#--------------------------------------------------------------------------------------
-#def evertestRegisterVM(testID, hostname):
-#	try:
-#		exec("from " + "evertest_netcfg" + " import evertestRegisterVm")
-#		evertestRegisterVm(testID, hostname)
-#	except:
-#		e = sys.exc_info()[0]
-#		print "Error in evertestRegisterVM: \n" + str(e)
-# -------------------------------------------------------------------------------------
-# EOF evertestRegisterVM
-# -------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------------
-# Get Networkpath from ip-API
-#--------------------------------------------------------------------------------------
-#def evertestNetworkXmlPath(testID):
-#	try:
-#		exec("from " + "evertest_netcfg" + " import evertestNetworkXmlPath")
-#		path = evertestNetworkXmlPath(testID)
-#	except:
-#		e = sys.exc_info()[0]
-#		print "Error in evertestNetworkXmlPath: \n" + str(e)
-#	return path
-# -------------------------------------------------------------------------------------
-# EOF evertestNetworkXmlPath
-# -------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------------
-# Removes the Network Configuration (.xml) file from the system, thus making space for
-# domain sitting in the same subnet ID
-#--------------------------------------------------------------------------------------
-#def evertestDestroyTestNetwork(testname):
-#	try:
-#		exec("from " + "evertest_netcfg" + " import evertestDestroyTestNetwork")
-#		evertestDestroyTestNetwork(testname)
-#		string = "virsh net-destroy " + testname
-#		t = sub.Popen(string, shell=True, stdout=sub.PIPE)
-#		t.wait()
-#	except:
-#		e = sys.exc_info()[0]
-#		print "Error in evertestDestroyTestNetwork: \n" + str(e)
-# -------------------------------------------------------------------------------------
-# EOF evertestDestroyTestNetwork
-# -------------------------------------------------------------------------------------
-
-		##### Eo replaceable part
 
 #--------------------------------------------------------------------------------------
 # Place own mac and network name in VM xml
@@ -221,37 +169,6 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 # EOF evertestConfigureVMNetwork
 # -------------------------------------------------------------------------------------
 
-
-#--------------------------------------------------------------------------------------
-# Add .test (archive containing config and scripts) to local Git repository
-#--------------------------------------------------------------------------------------
-#def evertestAddTest(testname):
-#	try:
-#		folder = "/var/evertest/tests/" + testname + "/"
-#		repo = git.Repo("/var/evertest/tests/")
-#		repo.git.add(folder)
-#	except:
-#		e = sys.exc_info()[edl]
-#		print "Error in evertestAddTest: \n" + str(e)
-#--------------------------------------------------------------------------------------
-# EOF evertestAddTest
-#--------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------------
-# Commit tests to local Git repository	---> commit after every creation of a new vm
-#--------------------------------------------------------------------------------------
-#def evertestCommitTest(testname):
-#	try:
-#		commitMsg = "Committed new test: " + testname
-#		repo = git.Repo('/var/evertest/tests/')
-#		repo.git.commit(m=commitMsg)
-#	except:
-#		e = sys.exc_info()[edl]
-#		print "Error in evertestCommitTest: \n" + str(e)
-#--------------------------------------------------------------------------------------
-# EOF evertestCommitTest
-#--------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------
 # Unzip the .test.tar file

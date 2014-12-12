@@ -97,9 +97,12 @@ def evertestGetLocalTestId():
 # Returns the actual tests network XML
 # -------------------------------------------------------------------------------------------------------
 def evertestGetLocalNetXml():
-
-	conf = glob(EVERTEST_WORKER_ROOT_DIR + "/*.net")[0]
-	return conf
+	try:
+		conf = glob(EVERTEST_WORKER_ROOT_DIR + "/*.net")[0]
+		return conf
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in evertestBreakSend: \n" + str(e)
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetLocalNetXml
 # -------------------------------------------------------------------------------------------------------
