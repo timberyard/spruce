@@ -146,21 +146,6 @@ def evertestGetNumber(testname):
 		##### Whole part after here could be removed caused by import of "import from evertest_netcfg *"
 
 #--------------------------------------------------------------------------------------
-# Parse testname to ip-API  -> made by tom ;) - all the other stuff is mine.
-#--------------------------------------------------------------------------------------
-#def evertestSetupTestNetwork(testID):
-#	try:
-#		exec("from " + "evertest_netcfg" + " import evertestSetupTestNetwork")
-#		evertestSetupTestNetwork(testID)
-#	except:
-#		e = sys.exc_info()[0]
-#		print "Error in evertestSetupTestNetwork: \n" + str(e)
-# -------------------------------------------------------------------------------------
-# EOF evertestSetupTestNetwork
-# -------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------------
 # Parse vmName to ip-API
 #--------------------------------------------------------------------------------------
 #def evertestRegisterVM(testID, hostname):
