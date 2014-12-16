@@ -1,4 +1,4 @@
-Evertest Repo
+Evertest Repository
 ========
 
 This is the main Evertest repository.
