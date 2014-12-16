@@ -29,20 +29,47 @@
 
 #Import base functions
 import os
-import system
+import sys
 
 #Import evertest modules
-from evertest_test_handler import *
-from evertest_netcfg import *
 from evertest_util import *
+
+
+#--------------------------------------------------------------------------------------
+# Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
+#--------------------------------------------------------------------------------------
+EVERTEST_DEBUG_LEVEL = 1
+edl = EVERTEST_DEBUG_LEVEL
+#--------------------------------------------------------------------------------------
+# EOF Debug-Settings
+#--------------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------------------------
+# Returns the Value assigned to a Command Line Parameter. (--param=value) 
+# If no Value was passed in, the specified default will be returned.
+# -------------------------------------------------------------------------------------------------------
+def handleCoreShellParam(param, default):
+
+	for cmdarg in sys.argv:
+		if(("--" + param + "=") in cmdarg):
+			return str(cmdarg.replace(("--" + param + "="), ""))
+	return default
+# -------------------------------------------------------------------------------------------------------
+# EOF shellFlag
+# -------------------------------------------------------------------------------------------------------
+
 
 #--------------------------------------------------------------------------------------
 # Evertest main core functionalities
 #--------------------------------------------------------------------------------------
 def evertest_setup_test(test):
-	process = runTest(test)
-	process.wait()
+	try:
+		process = runTest(test)
+		process.wait()
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in run: \n" + str(e)
 #--------------------------------------------------------------------------------------
 # EOF evertest_core_main
 #--------------------------------------------------------------------------------------
-
