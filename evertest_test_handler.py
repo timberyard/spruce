@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: test_handler.py
 # Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Dec. 12, 2014
+# Last rev.: Dec. 16, 2014
 # -------------------------------------------------------------------------------------------------------
 #
 #                                       /\
@@ -82,7 +82,7 @@ boarder       		= "~~~~~~~~~~"
 
 
 #--------------------------------------------------------------------------------------
-# Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
+# Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: Explicit debug message
 #--------------------------------------------------------------------------------------
 EVERTEST_DEBUG_LEVEL = 1
 edl = EVERTEST_DEBUG_LEVEL
@@ -95,7 +95,7 @@ edl = EVERTEST_DEBUG_LEVEL
 # Returns the Value assigned to a Command Line Parameter. (--param=value) 
 # If no Value was passed in, the specified default will be returned.
 # -------------------------------------------------------------------------------------------------------
-def shellParam2(param, default):
+def handleShellParam(param, default):
 
 	for cmdarg in sys.argv:
 		if(("--" + param + "=") in cmdarg):
@@ -302,7 +302,7 @@ def evertestMain(testname, filename):
 				evertestConstructVM(templateID, hostname, testname)
 				print "Constructed VM."
 				print boarder
-				time.sleep(15)
+				time.sleep(10)
 				evertestSendTest(hostname, testname)
 
 	except:
@@ -315,12 +315,10 @@ def evertestMain(testname, filename):
 #--------------------------------------------------------------------------------------
 # Running the parameter-given test
 #--------------------------------------------------------------------------------------
-def run(testname):
+def runTest(testname):
 	try:
 		evertestExtractTest(testname)
 		filename = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
-#		evertestAddTest(testname)
-#		evertestCommitTest(testname)
 		evertestMain(testname, filename)
 
 	except:
@@ -332,9 +330,9 @@ def run(testname):
 
 # Main call. Testname has to be given by --t="testname" (without quotes).
 
-givenParam = shellParam2("n", 0)
-if givenParam != 0:
-	run(givenParam)
-	print "Test started up successfully: " + str(givenParam)
+givenTest = handleShellParam("n", 0)
+if givenTest != 0:
+	runTest(givenTest)
+	print "Test started up successfully: " + str(givenTest)
 else:
 	print "No testname given. (Give the --n=$testname parameter a try)"
