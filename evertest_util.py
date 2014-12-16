@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest-util.py
 # Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Dec. 12, 2014
+# Last rev.: Dec. 16, 2014
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
@@ -214,10 +214,10 @@ def evertestSendStatus(status):
 		s.send(status)
 		data = s.recv(buffer_size)
 		s.close
-		print "Reached breakpoint (" + description + "), sent command to go on, recieved {'" + data + "'} as answer."
+		print "Got answer: " + str(data)
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in evertestBreakSend: \n" + str(e)
+		print "Error in evertestSendStatus: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
