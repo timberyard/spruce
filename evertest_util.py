@@ -156,6 +156,7 @@ def evertestBreakSend(receiver, description):
 			if(child.tag == host):
 				if(child.get("name") == "receiver"):
 					receiverIp = child.get("ip")
+
 		buffer_size = 1024
 		message = "Reached (" + description + ")."
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -199,3 +200,27 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------------------------------
+def evertestSendStatus(status):
+	try:
+		receiverIp = "192.168.0.223"
+		buffer_size = 1024
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((receiverIp, EVERTEST_MONITOR_PORT))
+		s.send(status)
+		data = s.recv(buffer_size)
+		s.close
+		print "Reached breakpoint (" + description + "), sent command to go on, recieved {'" + data + "'} as answer."
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in evertestBreakSend: \n" + str(e)
+#--------------------------------------------------------------------------------------------------------
+# EOF evertestSendStatus
+#--------------------------------------------------------------------------------------------------------
+
+actStatus = "Success!"
+evertestSendStatus(actStatus)
