@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest-netcfg.py
 # Author(s): HAUSWALD, Tom (EVB Everbase AG)
-# Last rev.: Nov. 29, 2014
+# Last rev.: Dec. 12, 2014 (Jan - Added EVERTEST_MONITOR_PORT variable)
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
@@ -111,6 +111,7 @@ EVERTEST_WORKER_ROOT_DIR = "/mnt"
 
 # Port on which incoming Files (sent via TCP) will be received
 EVERTEST_TCP_FILE_PORT = 8021
+EVERTEST_MONITOR_PORT = 8025
 
 # Separation Line
 SEPLN = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
