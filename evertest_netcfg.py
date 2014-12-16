@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest-netcfg.py
 # Author(s): HAUSWALD, Tom (EVB Everbase AG)
-# Last rev.: Dec. 12, 2014 (Jan - Added EVERTEST_MONITOR_PORT variable)
+# Last rev.: Dec. 16, 2014 (Jan - Added EVERTEST_MONITOR_PORT variable)
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
