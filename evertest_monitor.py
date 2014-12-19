@@ -19,12 +19,7 @@
 #						   /__________\	\/ /__________\
 #
 # -------------------------------------------------------------------------------------------------------
-# This modul is going to be the Evertest monitoring module.
-# It's functions are handling all Evertest modules like at the moment:
-#		- evertest_test_handler
-#		- evertest_netcfg
-#		- evertest_util
-# Also it will handle to generate and build the WebUI's contents and manage client interactions with the evertest System.
+# This module is going to be the Evertest monitoring module.
 # -------------------------------------------------------------------------------------------------------
 
 #Import base functions
@@ -66,7 +61,6 @@ def evertestReceiveStatus(hostname, port):
 
 			conn, addr = s.accept()
 			print "Received status from " + str(addr) + " [" + hostname + "] {" + time.strftime("%H:%M:%S") + "}"
-			print "The hostname is " + hostname
 			while 1:
 				data = conn.recv(buffer_size)
 				if not data: break
@@ -98,10 +92,10 @@ def evertestMonitorMain(test, xmlPath, port):
 				print "der hostname der VM ist " + hostname
 				ip = evertestGetVmIpAddr(test, hostname)
 				print "The VMs IP is " + ip
-				thread.start_new_thread(evertestReceiveStatus, (hostname, port,))
-				port = port + 1
-	except:
-		e = sys.exc_info()[edl]
+				thread.start_new_thread(evertestReceiveStatus, (hostname, port,)) 	# every VM is monitored in it's own thread
+				port = port + 1 													# because of the large number of threads, ports from 1024 to 49151 (well known ports (ICANN)) and 49152 to 65535 (dynamit/private ports)
+	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
+		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
 		print "Error in evertestMonitorMain: \n" + str(e)
 	while 1: pass
 #--------------------------------------------------------------------------------------------------------
@@ -110,6 +104,7 @@ def evertestMonitorMain(test, xmlPath, port):
 
 cnt = 0
 port = 0
-evertestMonitorMain("xfer_file", "/var/evertest/tests/xfer_file/xfer_file.conf", port)
-#while(cnt == 0):	### Queue construct or other waiting-function needed, otherwise errOut will not stop..
-#evertestReceiveStatus("barfoo")
+testname = "xfer_file"
+xmlPath = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
+print xmlPath
+evertestMonitorMain(testname, xmlPath, port)
