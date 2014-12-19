@@ -336,3 +336,11 @@ if givenTest != 0:
 	print "Test started up successfully: " + str(givenTest)
 else:
 	print "No testname given. (Give the --n=$testname parameter a try)"
+
+#helpParam = handleShellParam("help", 0)
+#if helpParam != 1:
+#	print "This is the Evertest Test Handler module.\nThis module was being created to pull up VMs with a testcase specified by the user."
+#	print "The following parameters can be used within this module:"
+#	print "     --help : Calls this help files."
+#	print "     --n=$testname : This specifies the used testcase. The name has to be given without file endings."
+#	sys.exit()
