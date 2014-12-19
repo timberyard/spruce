@@ -31,6 +31,8 @@
 import os
 import sys
 import socket
+import thread
+import time
 from lxml import etree as xmltree
 
 #Import evertest modules
@@ -40,7 +42,7 @@ from evertest_netcfg import *
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
 #--------------------------------------------------------------------------------------
-EVERTEST_DEBUG_LEVEL = 1
+EVERTEST_DEBUG_LEVEL = 0
 edl = EVERTEST_DEBUG_LEVEL
 #--------------------------------------------------------------------------------------
 # EOF Debug-Settings
@@ -48,52 +50,59 @@ edl = EVERTEST_DEBUG_LEVEL
 
 
 #--------------------------------------------------------------------------------------------------------
-#
+# Function receiving the live status from all running VMs (success, fail..)
+# 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def evertestReceiveStatus():
+def evertestReceiveStatus(threadName):
 	try:
-		myIp = "192.168.0.223"
-		buffer_size = 1024
-		message = "Got status."
-		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.bind(('', EVERTEST_MONITOR_PORT))
-		s.listen(1)
+		while (cnt == 0):
+#			print "Started a new server-socket."
+			buffer_size = 1024
+			message = "Got status."
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # after conn.close() the used socket has been left in TIME_WAIT state. The SO_REUSEADDR option tells the kernel to reuse the socket in TIME_WAIT state.
+			s.bind(("192.168.0.223", EVERTEST_MONITOR_PORT))		# Otherwise it would need its time until the socket can be reused and throw errors.
+			s.listen(1)
 
-		conn, addr = s.accept()
-		print "Got status " + str(addr)
-		while 1:
-			data = conn.recv(buffer_size)
-			if not data: break
-			print "Status: " + str(data)
-			if (str(data) == "failed"):
-				print "The testcase has failed!"
-			conn.send(message)
-		conn.close()
+			conn, addr = s.accept()
+			print "Received status from " + str(addr) + " [" + threadName + "] {" + time.strftime("%H:%M:%S") + "}"
+			while 1:
+				data = conn.recv(buffer_size)
+				if not data: break
+				print "Status: " + str(data)
+				print "~~~~~~~~~~~~~~~~~~~~"
+#				if (str(data) == "failed"):
+#					print "The testcase has failed!"
+				conn.send(message)
+			conn.close()
+#			print "Connection closed."	
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in evertestBreakListen: \n" + str(e)
+		print "Error in evertestReceiveStatus: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
 
 
 #--------------------------------------------------------------------------------------------------------
-#
+# Monitor main function; not sure if really needed yet 
 #--------------------------------------------------------------------------------------------------------
 def evertestMonitorMain(test, xmlPath):
+	try:
 		path = xmlPath
 		root = xmltree.parse(path).getroot()
 		for child in root:
 			if(child.tag == "vm"):
 				hostname = child.get("name")
 				ip = evertestGetVmIpAddr(test, hostname)
-				evertestReceiveStatus()
-
-
+				thread.start_new_thread(evertestReceiveStatus, (hostname)) 
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in evertestMonitorMain: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
-#
+# EOF evertestMonitorMain
 #--------------------------------------------------------------------------------------------------------
 
 cnt = 0
-while (cnt == 0):
-	evertestReceiveStatus()
+#while(cnt == 0):	### Queue construct or other waiting-function needed, otherwise errOut will not stop..
+evertestReceiveStatus("barfoo")
