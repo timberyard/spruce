@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: test_handler.py
 # Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Dec. 16, 2014
+# Last rev.: Jan. 05, 2015
 # -------------------------------------------------------------------------------------------------------
 #
 #                                       /\
@@ -66,6 +66,7 @@ import time
 import libvirt
 import tarfile
 from lxml import etree as xmltree
+import MySQLdb as mdb
 
 from evertest_netcfg import *
 
@@ -291,6 +292,13 @@ def evertestMain(testname, filename):
 
 		#Create VM(s)
 
+		#Establish connection to the local database and register the test itself to it (table "test")
+		db = mdb.connect(host="localhost", user="evertest", passwd="evb", db="evertest")
+		cur = db.cursor()
+		initTestString = "INSERT INTO test (testname, starttime, status) values(" + "'" + testname + "'" + ",NOW(),'running');"
+		cur.execute(initTestString)
+		db.commit()
+
 		for child in root:
 			if(child.tag == "vm"):
 				hostname = child.get("name")
@@ -302,8 +310,16 @@ def evertestMain(testname, filename):
 				evertestConstructVM(templateID, hostname, testname)
 				print "Constructed VM."
 				print boarder
+				#Register the new VM to the local database (table "vm")
+				excString = "INSERT INTO vm (vmname, vmip, vmtest, vmstatus) values(" + "'" + hostname + "'" + "," + "'" + evertestGetVmIpAddr(testname, hostname) + "'" + "," + "'" + testname + "'" + ",'running');"
+				print "Debug (excString): " + excString
+				cur.execute(excString)
+				db.commit()
+				print boarder
 				time.sleep(10)
 				evertestSendTest(hostname, testname)
+
+		db.close()
 
 	except:
 		e = sys.exc_info()[edl]
