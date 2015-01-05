@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest-util.py
 # Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Dec. 16, 2014
+# Last rev.: Jan. 05, 2015
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
@@ -112,23 +112,22 @@ def evertestGetLocalNetXml():
 # Sends a File via TCP to the specified virtual Machine
 # -------------------------------------------------------------------------------------------------------
 def evertestSendFile(filename, tid, receiver):
-
 	path = EVERTEST_WORKER_ROOT_DIR + "/" + filename
 	sock = socket.socket()
 	addr = evertestGetVmIpAddr(tid, receiver)
 	print "IP Address of Receiver: " + addr
 	sock.connect((addr, EVERTEST_TCP_FILE_PORT))
+
 	position = 0
 
 	print "Sending File '" + path + "' to VM: " + receiver + " (TID=" + tid + ")"
-
 	data = open(path, "rb")
-	
+
 	while 1:
-	    sent = sendfile.sendfile(sock.fileno(), data.fileno(), position, os.path.getsize(path))
-	    if sent == 0:
-	        break  # End of File reached
-	    position += sent
+    	sent = sendfile.sendfile(sock.fileno(), data.fileno(), position, os.path.getsize(path))
+    	if sent == 0:
+        	break  # End of File reached
+    	position += sent
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestSendFile
 # -------------------------------------------------------------------------------------------------------
@@ -138,8 +137,11 @@ def evertestSendFile(filename, tid, receiver):
 # Listens on TCP Port until File was received
 # -------------------------------------------------------------------------------------------------------
 def evertestRecvFile():
-
-	sendfile.wait(EVERTEST_TCP_FILE_PORT)
+	try:
+		sendfile.wait(EVERTEST_TCP_FILE_PORT)
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in evertestRecvFile: \n" + str(e)
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestSendFile
 # -------------------------------------------------------------------------------------------------------
@@ -151,13 +153,14 @@ def evertestRecvFile():
 def evertestBreakSend(receiver, description):
 	try:
 		path = evertestGetLocalNetXml()
+		print "Debug (netXml path): " + path
 		root = xmltree.parse(path).getroot()
-		for child in root:
-			if(child.tag == host):
-				if(child.get("name") == "receiver"):
+		for child in root.iter():
+			if(child.tag == "host"):
+				if(child.get("name") == receiver):
 					receiverIp = child.get("ip")
 
-		buffer_size = 1024
+		buffer_size = 2048
 		message = "Reached (" + description + ")."
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((receiverIp, EVERTEST_TCP_FILE_PORT))
@@ -179,7 +182,7 @@ def evertestBreakSend(receiver, description):
 def evertestBreakListen(rcvMessage):
 	try:
 		myIp = "127.0.0.1"
-		buffer_size = 1024
+		buffer_size = 2048
 		message = "Got it."
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.bind(('', EVERTEST_TCP_FILE_PORT))
