@@ -111,23 +111,23 @@ def evertestGetLocalNetXml():
 # -------------------------------------------------------------------------------------------------------
 # Sends a File via TCP to the specified virtual Machine
 # -------------------------------------------------------------------------------------------------------
-def evertestSendFile(filename, tid, receiver):
-	path = EVERTEST_WORKER_ROOT_DIR + "/" + filename
-	sock = socket.socket()
-	addr = evertestGetVmIpAddr(tid, receiver)
-	print "IP Address of Receiver: " + addr
-	sock.connect((addr, EVERTEST_TCP_FILE_PORT))
-
-	position = 0
-
-	print "Sending File '" + path + "' to VM: " + receiver + " (TID=" + tid + ")"
-	data = open(path, "rb")
-
-	while 1:
-    	sent = sendfile.sendfile(sock.fileno(), data.fileno(), position, os.path.getsize(path))
-    	if sent == 0:
-        	break  # End of File reached
-    	position += sent
+#def evertestSendFile(filename, tid, receiver):
+#	path = EVERTEST_WORKER_ROOT_DIR + "/" + filename
+#	sock = socket.socket()
+#	addr = evertestGetVmIpAddr(tid, receiver)
+#	print "IP Address of Receiver: " + addr
+#	sock.connect((addr, EVERTEST_TCP_FILE_PORT))
+#
+#	position = 0
+#
+#	print "Sending File '" + path + "' to VM: " + receiver + " (TID=" + tid + ")"
+#	data = open(path, "rb")
+#
+#	while 1:
+ #   	sent = sendfile.sendfile(sock.fileno(), data.fileno(), position, os.path.getsize(path))
+  #  	    if sent == 0:
+   #     		break  # End of File reached
+    #	position += sent
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestSendFile
 # -------------------------------------------------------------------------------------------------------
@@ -225,5 +225,5 @@ def evertestSendStatus(status):
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
 
-actStatus = "Success!"
-evertestSendStatus(actStatus)
+#actStatus = "Success!"
+#evertestSendStatus(actStatus)

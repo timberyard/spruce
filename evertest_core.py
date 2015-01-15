@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest_core.py
 # Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Dec. 16, 2014
+# Last rev.: Dec. 27, 2014
 # -------------------------------------------------------------------------------------------------------
 #
 #                                       /\
@@ -23,6 +23,7 @@
 # It's functions are handling all Evertest modules like at the moment:
 #		- evertest_test_handler
 #		- evertest_netcfg
+#		- evertest_monitor
 #		- evertest_util
 # Also it will handle to generate and build the WebUI's contents and manage client interactions with the evertest System.
 # -------------------------------------------------------------------------------------------------------
@@ -32,8 +33,10 @@ import os
 import sys
 
 #Import evertest modules
+import evertest_test_handler as tHandler
+from evertest_netcfg import *
+from evertest_monitor import *
 from evertest_util import *
-
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -65,7 +68,7 @@ def handleCoreShellParam(param, default):
 #--------------------------------------------------------------------------------------
 def evertest_setup_test(test):
 	try:
-		process = runTest(test)
+		process = tHandler.runTest(test)
 		process.wait()
 	except:
 		e = sys.exc_info()[edl]
@@ -73,3 +76,15 @@ def evertest_setup_test(test):
 #--------------------------------------------------------------------------------------
 # EOF evertest_core_main
 #--------------------------------------------------------------------------------------
+
+
+runParam = handleCoreShellParam("r", 0)
+if runParam != 0:
+	try:
+		evertest_setup_test(runParam)
+		print "Setting up test " + runParam
+	except:
+		e = sys.exc_info()[edl]
+		print "Error while setting up new testcase. Have you checked the testname (without quotes)?"
+
+# Maybe more or less copy the lower part of evertest_netcfg? (params etc..)

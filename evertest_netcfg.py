@@ -46,6 +46,9 @@
 #			and 'n' will be automatically determined upon the registration of a new testcase and or 
 #			virtual machine. Either by incrementing these values or by finding a lower number not yet in 
 #			use.
+#
+#	Issue: Every created VM has to have a assigned port for monitoring purposes -> Has to be fixed quick! (27.12.14)
+#
 # -------------------------------------------------------------------------------------------------------
 
 

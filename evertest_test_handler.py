@@ -121,6 +121,7 @@ def evertestGetTestID(testname):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetTestID: \n" + str(e)
+		stat = 1
 # -------------------------------------------------------------------------------------
 # EOF get evertestGetTestID
 # -------------------------------------------------------------------------------------
@@ -140,6 +141,7 @@ def evertestGetNumber(testname):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetNumber: \n" + str(e)
+		stat = 1
 # -------------------------------------------------------------------------------------
 # EOF evertestGetNumber
 # -------------------------------------------------------------------------------------
@@ -166,6 +168,7 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestConfigureVMNetwork: \n" + str(e)
+		stat = 1
 # -------------------------------------------------------------------------------------
 # EOF evertestConfigureVMNetwork
 # -------------------------------------------------------------------------------------
@@ -186,6 +189,7 @@ def evertestExtractTest(testname):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestExtractTest: \n" + str(e)
+		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF evertestExtractTest
 #--------------------------------------------------------------------------------------
@@ -201,10 +205,10 @@ def evertestSendTest(vmname, testname):
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".test")
 		filename = "/var/evertest/net/netcfg_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
-		print boarder
 	except:
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
+		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF evertestSendTest
 #--------------------------------------------------------------------------------------
@@ -249,6 +253,7 @@ def evertestConstructVM(templateID, hostname, testID):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestConstructVM: \n" + str(e)
+		stat = 1
 # -------------------------------------------------------------------------------------
 # EOF evertestConstructVM
 # -------------------------------------------------------------------------------------
@@ -293,11 +298,11 @@ def evertestMain(testname, filename):
 		#Create VM(s)
 
 		#Establish connection to the local database and register the test itself to it (table "test")
-		db = mdb.connect(host="localhost", user="evertest", passwd="evb", db="evertest")
-		cur = db.cursor()
-		initTestString = "INSERT INTO test (testname, starttime, status) values(" + "'" + testname + "'" + ",NOW(),'running');"
-		cur.execute(initTestString)
-		db.commit()
+#		db = mdb.connect(host="localhost", user="evertest", passwd="evb", db="evertest")
+#		cur = db.cursor()
+#		initTestString = "INSERT INTO test (testname, starttime, status) values(" + "'" + testname + "'" + ",NOW(),'running');"
+#		cur.execute(initTestString)
+#		db.commit()
 
 		for child in root:
 			if(child.tag == "vm"):
@@ -309,21 +314,21 @@ def evertestMain(testname, filename):
 				print "Used testfile: " + testfile
 				evertestConstructVM(templateID, hostname, testname)
 				print "Constructed VM."
-				print boarder
 				#Register the new VM to the local database (table "vm")
-				excString = "INSERT INTO vm (vmname, vmip, vmtest, vmstatus) values(" + "'" + hostname + "'" + "," + "'" + evertestGetVmIpAddr(testname, hostname) + "'" + "," + "'" + testname + "'" + ",'running');"
-				print "Debug (excString): " + excString
-				cur.execute(excString)
-				db.commit()
+#				excString = "INSERT INTO vm (vmname, vmip, vmtest, vmstatus) values(" + "'" + hostname + "'" + "," + "'" + evertestGetVmIpAddr(testname, hostname) + "'" + "," + "'" + testname + "'" + ",'running');"
+#				print "Debug (excString): " + excString 		#####Just Debug
+#				cur.execute(excString)
+#				db.commit()
 				print boarder
 				time.sleep(10)
 				evertestSendTest(hostname, testname)
-
-		db.close()
+#		cur.close()
+#		db.close()
 
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestMain: \n" + str(e)
+		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF evertestMain
 #-------------------------------------------------------------------
@@ -340,6 +345,7 @@ def runTest(testname):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in run: \n" + str(e)
+		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF run
 #--------------------------------------------------------------------------------------
@@ -348,11 +354,13 @@ def runTest(testname):
 
 givenTest = handleShellParam("n", 0)
 if givenTest != 0:
+	stat = 0
 	runTest(givenTest)
 	print "Test started up successfully: " + str(givenTest)
+	sys.exit(stat)
 else:
 	print "No testname given. (Give the --n=$testname parameter a try)"
-
+	sys.exit(1)
 #helpParam = handleShellParam("help", 0)
 #if helpParam != 1:
 #	print "This is the Evertest Test Handler module.\nThis module was being created to pull up VMs with a testcase specified by the user."
