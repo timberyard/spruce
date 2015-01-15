@@ -33,10 +33,10 @@ import os
 import sys
 
 #Import evertest modules
-import evertest_test_handler as tHandler
-from evertest_netcfg import *
-from evertest_monitor import *
-from evertest_util import *
+import spruce_test_handler as tHandler
+from spruce_netcfg import *
+from spruce_monitor import *
+from spruce_util import *
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message

@@ -68,7 +68,7 @@ import tarfile
 from lxml import etree as xmltree
 import MySQLdb as mdb
 
-from evertest_netcfg import *
+from spruce_netcfg import *
 
 #--------------------------------------------------------------------------------------
 #Paths

@@ -31,7 +31,7 @@ import time
 from lxml import etree as xmltree
 
 #Import evertest modules
-from evertest_netcfg import *
+from spruce_netcfg import *
 
 hostIP = "192.168.0.223" # has to be changed for new machine!
 

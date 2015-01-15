@@ -37,7 +37,7 @@ import socket
 from lxml import etree as xmltree
 
 from glob			 import *
-from evertest_netcfg import *
+from spruce_netcfg import *
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
