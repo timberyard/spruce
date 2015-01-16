@@ -10,3 +10,4 @@ There are four main modules used as testing framework, a fifth as core module is
 2. spruce_netcfg.py - This module rules networking stuff like creating virtual networks for every single testcase.
 3. spruce_util.py - This modules does what its' name says: It provides utilities.
 4. spruce_monitor.py - Monitoring module --- Work in progress.
+5. spruce_core.py - Canceled
