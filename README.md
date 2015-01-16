@@ -2,7 +2,7 @@ Spruce Repository
 ========
 
 This is the main Spruce repository.
-Spruce is a framework for testing the everbase software in several ways on "on-demand" VMs.
+Spruce is a framework for testing software in several ways on "on-demand" VMs.
 
 There are four main modules used as testing framework, a fifth as core module is in progress.
 
