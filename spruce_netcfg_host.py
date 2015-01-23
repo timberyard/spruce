@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest_netcfg_host.py
-# Author(s): HAUSWALD, Tom (EVB Everbase AG)
-# Last rev.: Jan 16, 2015
+# Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
+# Last rev.: Jan 23, 2015 
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
@@ -109,7 +109,7 @@ SEPLN = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 NEWLN = "\n"
 
 # Ports to not assign to virtual Machines
-EVERTEST_FORBIDDEN_PORTS = [ 1025, 1279 ]
+EVERTEST_FORBIDDEN_PORTS = [ 1025, 1279, 8080 ]
 # -------------------------------------------------------------------------------------------------------
 
 

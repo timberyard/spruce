@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest_netcfg_client.py
-# Author(s): HAUSWALD, Tom (EVB Everbase AG)
-# Last rev.: Jan 16, 2015
+# Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
+# Last rev.: Jan 05, 2015
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \

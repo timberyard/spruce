@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest-util.py
-# Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Jan. 05, 2015
+# Author(s): RIEDEL, Jan (EVB Everbase AG); HAUSWALD, Tom (EVB Everbase AG); 
+# Last rev.: Jan. 23, 2015
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
