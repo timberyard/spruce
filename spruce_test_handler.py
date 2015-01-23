@@ -24,7 +24,7 @@
 # It provides routines to create and start VMs out of the information captured from the used .test file.
 # When the test handling process starts, all relevant information from the test is committed to a local Git
 # repository. Then all the VMs are being created, their hostnames are set to the specified VM-name (in test
-# config), they get IP and MAC addresses and are being started up. Every single test runs in its own virtual
+# config), they get IP and MAC addressesb and are being started up. Every single test runs in its own virtual
 # network so that all VMs in a test can communicate with each other. After startup the VMs get their test-
 # scripts from the Git and run them automatically. When finished, logs are being committed to the repo.
 # Notice: Some commands used in this python script are running in a unix based subshell because implementation
@@ -42,7 +42,7 @@
 # Functions used from evertest_netcfg module are:
 #		- evertestSetupTestNetwork -> Setup the virtual network for the actual running test
 #		- evertestRegisterVM -> Register new VMs to the virtual network
-#		- evertestNetworkXmlPath -> Get network.xml's path
+#		- evertestGetNetconfPath -> Get network.xml's path
 #		- evertestDestroyTestNetwork -> Remove the virtual network
 #
 # Implementations planned:
@@ -68,7 +68,7 @@ import tarfile
 from lxml import etree as xmltree
 import MySQLdb as mdb
 
-from spruce_netcfg import *
+from spruce_netcfg_host import *
 
 #--------------------------------------------------------------------------------------
 #Paths
@@ -203,8 +203,10 @@ def evertestSendTest(vmname, testname):
 		vmip = evertestGetVmIpAddr(testname, vmname)
 		filename = "/var/evertest/tests/" + testname + ".test"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".test")
-		filename = "/var/evertest/net/netcfg_" + testname + ".xml"
+		filename = "/var/evertest/net/netconf_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
+		filename = "/var/evertest/net/portmap_" + testname + ".xml"
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".xml")
 	except:
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
@@ -289,20 +291,11 @@ def evertestMain(testname, filename):
 				hostname = str(child.get("name"))
 				evertestRegisterVm(testname, hostname)
 
-		netPath = evertestNetworkXmlPath(testname)
+		netPath = evertestGetNetconfPath(testname)
 		netCreate = "virsh net-create " + netPath
 		s = sub.Popen(netCreate, shell=True, stdout=sub.PIPE)
 		s.wait()
 		print boarder
-
-		#Create VM(s)
-
-		#Establish connection to the local database and register the test itself to it (table "test")
-#		db = mdb.connect(host="localhost", user="evertest", passwd="evb", db="evertest")
-#		cur = db.cursor()
-#		initTestString = "INSERT INTO test (testname, starttime, status) values(" + "'" + testname + "'" + ",NOW(),'running');"
-#		cur.execute(initTestString)
-#		db.commit()
 
 		for child in root:
 			if(child.tag == "vm"):
@@ -314,16 +307,9 @@ def evertestMain(testname, filename):
 				print "Used testfile: " + testfile
 				evertestConstructVM(templateID, hostname, testname)
 				print "Constructed VM."
-				#Register the new VM to the local database (table "vm")
-#				excString = "INSERT INTO vm (vmname, vmip, vmtest, vmstatus) values(" + "'" + hostname + "'" + "," + "'" + evertestGetVmIpAddr(testname, hostname) + "'" + "," + "'" + testname + "'" + ",'running');"
-#				print "Debug (excString): " + excString 		#####Just Debug
-#				cur.execute(excString)
-#				db.commit()
 				print boarder
 				time.sleep(10)
 				evertestSendTest(hostname, testname)
-#		cur.close()
-#		db.close()
 
 	except:
 		e = sys.exc_info()[edl]
@@ -357,6 +343,7 @@ if givenTest != 0:
 	stat = 0
 	runTest(givenTest)
 	print "Test started up successfully: " + str(givenTest)
+	time.sleep(10)
 	sys.exit(stat)
 else:
 	print "No testname given. (Give the --n=$testname parameter a try)"

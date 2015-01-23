@@ -34,10 +34,15 @@
 import sendfile
 import subprocess
 import socket
+import errno
 from lxml import etree as xmltree
 
 from glob			 import *
-from spruce_netcfg import *
+from spruce_netcfg_client import *
+
+EVERTEST_TCP_FILE_PORT 		= 8021
+EVERTEST_SOCKET_MODE_SEND 	= 0
+EVERTEST_SOCKET_MODE_RECV 	= 1
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -109,25 +114,75 @@ def evertestGetLocalNetXml():
 
 
 # -------------------------------------------------------------------------------------------------------
+# Creates and opens a TCP Socket that is either setup to listen to a specified port or to send Data
+# to it. Returns the created Socket Object on Success.
+# -------------------------------------------------------------------------------------------------------
+def evertestOpenSocket(tid, vm, port, mode):
+
+	addr = evertestGetVmIpAddr(tid, vm)
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	# Print Success once socket was opened
+	if mode == EVERTEST_SOCKET_MODE_SEND:
+		print "Successfully opened socket on port %d for outgoing data." % port
+	else:
+		print "Successfully opened socket on port %d for incoming data." % port
+
+	# OUTGOING MODE
+	# Connect to Recipient Port
+	if mode == EVERTEST_SOCKET_MODE_SEND:
+		try:
+			print "Trying to connect to recipiant socket %d on " % port + addr + "..."
+			sock.connect((addr, port))
+		except socket.error as err:
+			print "TCP connection setup failed. Error: " + err.strerror
+			return 
+	
+	# INCOMING MODE
+	# Bind to dedicated Port, listen to Connections
+	else:
+		sock.bind((addr, port))
+		sock.listen(5)
+
+	return sock
+# -------------------------------------------------------------------------------------------------------
+# EOF evertestOpenSocket
+# -------------------------------------------------------------------------------------------------------
+
+
+def evertestCloseSocket(socket):
+
+	socket.shutdown()
+	socket.close()
+
+
+# -------------------------------------------------------------------------------------------------------
 # Sends a File via TCP to the specified virtual Machine
 # -------------------------------------------------------------------------------------------------------
-#def evertestSendFile(filename, tid, receiver):
-#	path = EVERTEST_WORKER_ROOT_DIR + "/" + filename
-#	sock = socket.socket()
-#	addr = evertestGetVmIpAddr(tid, receiver)
-#	print "IP Address of Receiver: " + addr
-#	sock.connect((addr, EVERTEST_TCP_FILE_PORT))
-#
-#	position = 0
-#
-#	print "Sending File '" + path + "' to VM: " + receiver + " (TID=" + tid + ")"
-#	data = open(path, "rb")
-#
-#	while 1:
- #   	sent = sendfile.sendfile(sock.fileno(), data.fileno(), position, os.path.getsize(path))
-  #  	    if sent == 0:
-   #     		break  # End of File reached
-    #	position += sent
+def evertestSendFile(sock, filename, tid, receiver):
+
+	path = EVERTEST_WORKER_ROOT_DIR + "/" + filename
+	
+	if receiver == "localhost":
+		addr = "127.0.0.1"
+	else:
+		addr = evertestGetVmIpAddr(tid, receiver)
+	
+	datasz = os.path.getsize(path)
+	data = open(path, "rb")
+
+	print "Resolved target address => Worker Name: " + receiver + ", IP: " + addr
+	print "Sending File '" + path + ("' [sz=%d] to VM: " % datasz) + receiver + " (TID=" + tid + ")"
+
+	while 1:
+	    # Try to send File's Data
+	    sent = sendfile.sendfile(sock.fileno(), data.fileno(), position, )
+	    
+	    # End of File reached
+	    if sent == 0:
+	    	print "End of file reached, transmission succeeded."
+	        break 
+	    position += sent
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestSendFile
 # -------------------------------------------------------------------------------------------------------
@@ -136,12 +191,40 @@ def evertestGetLocalNetXml():
 # -------------------------------------------------------------------------------------------------------
 # Listens on TCP Port until File was received
 # -------------------------------------------------------------------------------------------------------
-def evertestRecvFile():
-	try:
-		sendfile.wait(EVERTEST_TCP_FILE_PORT)
-	except:
-		e = sys.exc_info()[edl]
-		print "Error in evertestRecvFile: \n" + str(e)
+def evertestRecvFile(sock):
+
+	name 		= evertestGetLocalName()
+	test 		= evertestGetLocalTestId()
+	addr 		= evertestGetVmIpAddr(test, name)
+	senderaddr  = evertestGetVmIpAddr(test, "sender")
+	chunks 		= []
+	recvd  		= 0
+	chunk  		= "-"
+	accum 		= 0
+
+	# Wait for incoming Connections from Sender
+	while 1:
+		(clientsocket, address) = serversocket.accept()
+		if address == senderaddr:
+			print "Connected to Sender VM!"
+			break
+		else:
+			accum += 1
+			if accum >= 10:
+				print "Waiting for Connection from Sender..."
+				accum = 0
+
+
+	while len(chunk) != 0:
+		chunk = sock.recv( 1024 )
+		if chunk == '':
+			print "Could not receive data."
+			return ""
+		chunks.append(chunk)
+		recvd += len(chunk)
+	return "".join(chunks)
+
+	evertestCloseSocket(sock)
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestSendFile
 # -------------------------------------------------------------------------------------------------------
