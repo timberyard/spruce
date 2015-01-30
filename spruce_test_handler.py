@@ -206,8 +206,12 @@ def evertestSendTest(vmname, testname):
 		filename = "/var/evertest/net/netconf_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
 		filename = "/var/evertest/net/portmap_" + testname + ".xml"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".xml")
-	except:
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/scripts/" + testname + ".ports")
+		filename = "/home/jan/Schreibtisch/evertest/spruce_netcfg_evt.py"
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/scripts/evertest_netcfg.py")
+		filename = "/home/jan/Schreibtisch/evertest/spruce_util_evt.py"
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/scripts/evertest_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
+	except:																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
 		stat = 1

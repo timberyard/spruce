@@ -53,7 +53,7 @@ EVERTEST_SILENT = False
 
 # Directory in which the virtual Machine's Script and the current
 # Test's Configuration File are stored
-EVERTEST_ROOT_PATH = "/mnt"
+EVERTEST_ROOT_PATH = "/mnt/scripts/"
 
 # Start of valid Range of Ports to run VM processes on. (On Host Machine)
 EVERTEST_VM_PORT_BASE = 1024;

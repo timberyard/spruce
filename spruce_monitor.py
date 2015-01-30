@@ -33,7 +33,8 @@ from lxml import etree as xmltree
 #Import evertest modules
 from spruce_netcfg_host import *
 
-hostIP = "192.168.0.223" # has to be changed for new machine!
+#hostIP = "192.168.0.223" # has to be changed for new machine!
+hostIP = "192.168.0.211"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -57,7 +58,7 @@ def evertestReceiveStatus(hostname, port):
 			message = "Got status."
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 	# after conn.close() the used socket has been left in TIME_WAIT state. The SO_REUSEADDR option tells the kernel to reuse the socket in TIME_WAIT state.
-			s.bind((hostIP, (EVERTEST_MONITOR_PORT + port)))	# Otherwise it would need its time until the socket can be reused and throw errors (multiple threads would be tried to start on the same socket without success)
+			s.bind((hostIP, (port)))	# Otherwise it would need its time until the socket can be reused and throw errors (multiple threads would be tried to start on the same socket without success) EVERTEST_MONITOR_PORT + port
 			s.listen(1)
 
 			conn, addr = s.accept()
@@ -83,21 +84,22 @@ def evertestReceiveStatus(hostname, port):
 #--------------------------------------------------------------------------------------------------------
 # Monitor main function; not sure if really needed yet 
 #--------------------------------------------------------------------------------------------------------
-def evertestMonitorMain(test, xmlPath, port):
+def evertestMonitorMain(test, vm, xmlPath, port):
 	try:
-		path = xmlPath
-		root = xmltree.parse(path).getroot()
-		for child in root:
-			if(child.tag == "vm"):
-				hostname = child.get("name")
-				print "der hostname der VM ist " + hostname
-				ip = evertestGetVmIpAddr(test, hostname)
-				print "The VMs IP is " + ip
-				thread.start_new_thread(evertestReceiveStatus, (hostname, port,)) 	# every VM is monitored in it's own thread
-				port = port + 1 													# because of the large number of threads, ports from 1024 to 49151 (well known ports (ICANN)) and 49152 to 65535 (dynamit/private ports)
-				if((port + 1024) > 49151):
-					print "Error: Maximum port number is 49151 (public ports)!"
-					break
+#		path = xmlPath
+#		root = xmltree.parse(path).getroot()
+#		for child in root:
+#			if(child.tag == "vm"):
+#				hostname = child.get("name")
+#				print "der hostname der VM ist " + hostname
+#				ip = evertestGetVmIpAddr(test, hostname)
+#				print "The VMs IP is " + ip
+#				thread.start_new_thread(evertestReceiveStatus, (hostname, port,)) 	# every VM is monitored in it's own thread
+#				port = port + 1 													# because of the large number of threads, ports from 1024 to 49151 (well known ports (ICANN)) and 49152 to 65535 (dynamit/private ports)
+#				if((port + 1024) > 49151):
+#					print "Error: Maximum port number is 49151 (public ports)!"
+#					break
+		thread.start_new_thread(evertestReceiveStatus, (vm, port))
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
 		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
 		print "Error in evertestMonitorMain: \n" + str(e)
@@ -107,8 +109,9 @@ def evertestMonitorMain(test, xmlPath, port):
 #--------------------------------------------------------------------------------------------------------
 
 cnt = 0
-port = 0
-testname = "xfer_file"
+testname = "install_apache"
+vmname = "apache"
 xmlPath = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
 print xmlPath
-evertestMonitorMain(testname, xmlPath, port)
+port = evertestGetVmPort(testname, vmname)
+evertestMonitorMain(testname, vmname, xmlPath, port)

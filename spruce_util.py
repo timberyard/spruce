@@ -58,17 +58,22 @@ edl = EVERTEST_DEBUG_LEVEL
 # Executes a Bash Command.
 # -------------------------------------------------------------------------------------------------------
 def evertestRunBash(command):
+	try:
+		# Start Subprocess
+		process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	# Start Subprocess
-	process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		# Supply User w/ piped stdout & stderr Output
+		for lout in iter(process.stdout.readline, b''):
+			print lout
+		for lerr in iter(process.stderr.readline, b''):
+			print lerr
 
-	# Supply User w/ piped stdout & stderr Output
-	for lout in iter(process.stdout.readline, b''):
-		print lout
-	for lerr in iter(process.stderr.readline, b''):
-		print lerr
-
-	process.communicate()
+		process.communicate()
+		return 0
+	except:
+		e = sys.exc_info()[1]
+		print "Error occoured in evertestRunBash: \n" + str(e)
+		return 1
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestRunBash
 # -------------------------------------------------------------------------------------------------------
