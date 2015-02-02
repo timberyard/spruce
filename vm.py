@@ -7,7 +7,8 @@ import shutil
 import tarfile
 from subprocess import check_output
 
-path = "/var/testing/"
+workingDir = "/mnt/"
+filesPath  = "/mnt/files"
 
 def evertestExtractTest(dottest, testname):
 	try:
@@ -26,34 +27,32 @@ getHostname = "hostname"
 hostname = check_output(getHostname)
 hostname = hostname.replace('\n', '')
 
-dottest = check_output(["ls -LR /mnt/ | grep .test"], shell=True)
+dottest = check_output(["ls -LR /mnt/ | grep *.test*"], shell=True)
 dottest = dottest.replace('\n', '')
-testname = check_output(["ls -LR /mnt/ | grep .test | cut -d'.' -f 1"], shell=True)
+testname = check_output(["ls -LR /mnt/ | grep *.test* | cut -d'.' -f 1"], shell=True)
 testname = testname.replace('\n', '')
 
 evertestExtractTest(dottest, testname)
 
+#Script File
 scriptFile = hostname + ".script"
 sourceDir = "/mnt/" + testname + "/scripts/"
-
+destination = workingDir
 source = sourceDir + scriptFile
-destination = "/mnt/scripts/"
-shutil.copy2(source, destination)
-
-destination = "/mnt/"
-source = sourceDir + "evertest_netcfg.py"
 shutil.copy(source, destination)
 
-source = sourceDir + "evertest_util.py"
-shutil.copy2(source, destination)
-
+#Config File
 configDir = "/mnt/" + testname + "/"
 config = configDir + testname + ".conf"
 source = config
-shutil.copy2(source, destination)
+destination = workingDir
+shutil.copy(source, destination)
 
-filesDir = "/mnt/" + testname + "/files/" #has to be -r to copy whole /files/ dir recursively
-shutil.copytree(filesDir, destination, symlinks=False, ignore=None)
+#Other files
+srcFilesDir = "/mnt/" + testname + "/files/"
+if os.path.exists(srcFilesDir):
+	shutil.copytree(srcFilesDir, filesPath, symlinks=False, ignore=None)
 
+#Execute script
 scriptFile = "/mnt/" + hostname + ".script"
 os.system("python -B " + scriptFile)
