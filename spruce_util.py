@@ -298,7 +298,9 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 def evertestSendStatus(status):
 	try:
-		receiverIp = "192.168.0.223"
+		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test")
+		print "Monitor Port: " + str(EVERTEST_MONITOR_PORT)
+		receiverIp = HOST_IP
 		buffer_size = 1024
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((receiverIp, EVERTEST_MONITOR_PORT))
@@ -309,6 +311,7 @@ def evertestSendStatus(status):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestSendStatus: \n" + str(e)
+
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------

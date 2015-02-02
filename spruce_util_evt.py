@@ -43,7 +43,8 @@ from evertest_netcfg import *
 EVERTEST_TCP_FILE_PORT 		= 8021
 EVERTEST_SOCKET_MODE_SEND 	= 0
 EVERTEST_SOCKET_MODE_RECV 	= 1
-EVERTEST_WORKER_ROOT_DIR	= "/mnt/scripts"
+EVERTEST_WORKER_ROOT_DIR	= "/mnt"
+HOST_IP 					= "192.168.0.223"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -163,7 +164,7 @@ def evertestCloseSocket(socket):
 
 
 # -------------------------------------------------------------------------------------------------------
-# Sends a File via TCP to the specified virtual Machine
+# Sends a File via TCP to the specified virtual Machine ######### TO BE REVIEWED
 # -------------------------------------------------------------------------------------------------------
 def evertestSendFile(sock, filename, tid, receiver):
 
@@ -195,7 +196,7 @@ def evertestSendFile(sock, filename, tid, receiver):
 
 
 # -------------------------------------------------------------------------------------------------------
-# Listens on TCP Port until File was received
+# Listens on TCP Port until File was received^######## TO BE FIXED 
 # -------------------------------------------------------------------------------------------------------
 def evertestRecvFile(sock):
 
@@ -299,9 +300,9 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 def evertestSendStatus(status):
 	try:
-		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName())
+		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test")
 		print "Monitor Port: " + str(EVERTEST_MONITOR_PORT)
-		receiverIp = "192.168.0.211"
+		receiverIp = HOST_IP
 		buffer_size = 1024
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((receiverIp, EVERTEST_MONITOR_PORT))
@@ -315,6 +316,3 @@ def evertestSendStatus(status):
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
-
-#actStatus = "Success!"
-#evertestSendStatus(actStatus)
