@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: test_handler.py
 # Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Jan. 23, 2015
+# Last rev.: Feb. 02, 2015
 # -------------------------------------------------------------------------------------------------------
 #
 #                                       /\
@@ -206,11 +206,11 @@ def evertestSendTest(vmname, testname):
 		filename = "/var/evertest/net/netconf_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
 		filename = "/var/evertest/net/portmap_" + testname + ".xml"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/scripts/" + testname + ".ports")
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".ports")
 		filename = "/home/jan/Schreibtisch/evertest/spruce_netcfg_evt.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/scripts/evertest_netcfg.py")
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_netcfg.py")
 		filename = "/home/jan/Schreibtisch/evertest/spruce_util_evt.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/scripts/evertest_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
 	except:																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
@@ -346,7 +346,10 @@ givenTest = handleShellParam("n", 0)
 if givenTest != 0:
 	stat = 0
 	runTest(givenTest)
-	print "Test started up successfully: " + str(givenTest)
+	if (stat == 0):
+		print "Test started up successfully: " + str(givenTest)
+	else:
+		print "Test failed on starting up: " + str(givenTest)
 	time.sleep(10)
 	sys.exit(stat)
 else:
