@@ -55,7 +55,6 @@ EVERTEST_SILENT = False
 # Test's Configuration File are stored
 EVERTEST_ROOT_PATH = "/mnt/scripts/"
 
-# Start of valid Range of Ports to run VM processes on. (On Host Machine)
 EVERTEST_VM_PORT_BASE = 1024;
 
 # Separation Line
@@ -167,16 +166,27 @@ def evertestGetVmMacAddr(testName, vmName):
 # -------------------------------------------------------------------------------------------------------
 # Returns the dedicated Port Number of the VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmPort(testName, vmName):
-	
-	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
-	for node in root.iter():
-		if(node.tag == "entry"):
-			if(node.get("name") == vmName):
-				return int(node.get("port"))
+def evertestGetVmPort(testName, vmName, mode):
 
-	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
-	return "???.???.???.???"
+	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
+	if mode == "vm":
+		for node in root.iter():
+			if(node.tag == "entry"):
+				if(node.get("name") == vmName):
+					return int(node.get("port"))
+
+	elif mode == "test":
+		entry = root.find("entry")
+		port = int(entry.get("port"))
+		if port != 0:
+			return port
+		else:
+			return "No port entry found."
+	else:
+		return "No mode given. Choose between 'vm' or 'test'side monitoring."
+
+#	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
+#	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetVmMacAddr
 # -------------------------------------------------------------------------------------------------------

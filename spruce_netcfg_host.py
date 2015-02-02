@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest_netcfg_host.py
 # Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Jan 23, 2015 
+# Last rev.: Feb. 02, 2015 (Jan)
 # -------------------------------------------------------------------------------------------------------
 #                            .
 #                           / \
@@ -424,16 +424,27 @@ def evertestGetVmMacAddr(testName, vmName):
 # -------------------------------------------------------------------------------------------------------
 # Returns the dedicated Port Number of the VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmPort(testName, vmName):
-	
-	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
-	for node in root.iter():
-		if(node.tag == "entry"):
-			if(node.get("name") == vmName):
-				return int(node.get("port"))
+def evertestGetVmPort(testName, vmName, mode):
 
-	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
-	return "???.???.???.???"
+	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
+	if mode == "vm":
+		for node in root.iter():
+			if(node.tag == "entry"):
+				if(node.get("name") == vmName):
+					return int(node.get("port"))
+
+	elif mode == "test":
+		entry = root.find("entry")
+		port = int(entry.get("port"))
+		if port != 0:
+			return port
+		else:
+			return "No port entry found."
+	else:
+		return "No mode given. Choose between 'vm' or 'test'side monitoring."
+
+#	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
+#	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetVmMacAddr
 # -------------------------------------------------------------------------------------------------------
