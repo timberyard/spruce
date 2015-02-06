@@ -3,11 +3,9 @@ Spruce - a distributed test runner
 ##Spruce v0.1
 ========
 
-###Spruce is a framework for testing software in several ways on "on-demand" VMs.
+Spruce is a framework for testing software in several ways on "on-demand" VMs.
 
-###There are four main modules used as testing framework:
-========
-
+There are four main modules used as testing framework:
 
 1. spruce_test_handler.py - This modules creates VMs from templates and gives them all needed data.
 2. spruce_netcfg_host.py - This module rules networking stuff like creating virtual networks for every single testcase (full functions)
