@@ -1,7 +1,6 @@
 Spruce - a distributed test runner
 ========
 ##Spruce v0.1
-========
 
 Spruce is a framework for testing software in several ways on "on-demand" VMs.
 
