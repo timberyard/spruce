@@ -191,11 +191,9 @@ def evertestExtractTest(testname):
 		tfile = tarfile.open(extractString)
 		if tarfile.is_tarfile(extractString):
 			tfile.extractall(extractPath)
-		else:
-			print extractString + " is not a tarfile." 
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in evertestExtractTest: \n" + str(e)
+		print "Error occoured while extracting .test file: \n" + str(e)
 		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF evertestExtractTest
@@ -336,6 +334,9 @@ def evertestMain(testname, filename):
 def runTest(testname):
 	try:
 		evertestExtractTest(testname)
+#		if extract != 0:
+#			global stat
+#			stat = 1
 		filename = evertestTestPath + testname + "/" + testname + ".conf"
 		evertestMain(testname, filename)
 
@@ -351,14 +352,16 @@ def runTest(testname):
 givenTest = handleShellParam("n", 0)
 helpParam0 = handleShellParam("help", 0)
 helpParam1 = handleShellParam("h", 0)
+stat = 1 #init test with error 1
 
 if givenTest != 0:
 	stat = 0
 	runTest(givenTest)
-	if (stat == 0):
-		print "Test started up successfully: " + str(givenTest)
-	else:
-		print "Test failed on starting up: " + str(givenTest)
+#	print stat
+#	if(stat != 0):
+#		print "Test failed on starting up: " + str(givenTest)
+#	if (stat == 0):
+#		print "Test started up successfully: " + str(givenTest)
 	time.sleep(10)
 	sys.exit(stat)
 

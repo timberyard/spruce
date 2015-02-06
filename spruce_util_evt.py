@@ -164,7 +164,7 @@ def evertestCloseSocket(socket):
 
 
 # -------------------------------------------------------------------------------------------------------
-# Sends a File via TCP to the specified virtual Machine ######### TO BE REVIEWED
+# Sends a File via TCP to the specified virtual Machine
 # -------------------------------------------------------------------------------------------------------
 def evertestSendFile(sock, filename, tid, receiver):
 
@@ -300,7 +300,7 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 def evertestSendStatus(status):
 	try:
-		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test")
+		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
 		print "Monitor Port: " + str(EVERTEST_MONITOR_PORT)
 		receiverIp = HOST_IP
 		buffer_size = 1024
