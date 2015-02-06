@@ -66,16 +66,17 @@ import time
 import libvirt
 import tarfile
 from lxml import etree as xmltree
-import MySQLdb as mdb
 
 from spruce_netcfg_host import *
+
+spruceVersion = "0.1"
 
 #--------------------------------------------------------------------------------------
 #Paths
 #--------------------------------------------------------------------------------------
-evertest_path_net   = "/var/evertest/net/"
-evertest_path_tests = "/var/evertest/tests/"
-evertest_path 		= "/var/evertest/tests/"
+evertestNetPath     = "/var/evertest/net/"
+evertestTestPath	= "/var/evertest/tests/"
+evertestRootPath	= "/home/jan/Schreibtisch/evertest/"
 boarder       		= "~~~~~~~~~~"
 # -------------------------------------------------------------------------------------
 # EOF Paths
@@ -101,6 +102,12 @@ def handleShellParam(param, default):
 	for cmdarg in sys.argv:
 		if(("--" + param + "=") in cmdarg):
 			return str(cmdarg.replace(("--" + param + "="), ""))
+		elif(("-" + param + "=") in cmdarg):
+			return str(cmdarg.replace(("-" + param + "="), ""))
+		elif(("--" + param) in cmdarg):
+			return str(cmdarg.replace(("--"), ""))
+		elif(("-" + param) in cmdarg):
+			return str(cmdarg.replace(("-"), ""))
 	return default
 # -------------------------------------------------------------------------------------------------------
 # EOF shellFlag
@@ -112,7 +119,7 @@ def handleShellParam(param, default):
 #--------------------------------------------------------------------------------------
 def evertestGetTestID(testname):
 	try:
-		path = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
+		path = evertestTestPath + testname + "/" + testname + ".conf"
 		root = xmltree.parse(path).getroot()
 		for child in root:
 			if(child.tag == "info"):
@@ -132,7 +139,7 @@ def evertestGetTestID(testname):
 #--------------------------------------------------------------------------------------
 def evertestGetNumber(testname):
 	try:
-		path = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
+		path = evertestTestPath + testname + "/" + testname + ".conf"
 		root = xmltree.parse(path).getroot()
 		for child in root:
 			if(child.tag == "info"):
@@ -179,8 +186,8 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 #--------------------------------------------------------------------------------------
 def evertestExtractTest(testname):
 	try:
-		extractString = "/var/evertest/tests/" + testname + ".test"
-		extractPath = "/var/evertest/tests/" + testname + "/"
+		extractString = evertestTestPath + testname + ".test"
+		extractPath = evertestTestPath + testname + "/"
 		tfile = tarfile.open(extractString)
 		if tarfile.is_tarfile(extractString):
 			tfile.extractall(extractPath)
@@ -201,15 +208,15 @@ def evertestExtractTest(testname):
 def evertestSendTest(vmname, testname):
 	try:
 		vmip = evertestGetVmIpAddr(testname, vmname)
-		filename = "/var/evertest/tests/" + testname + ".test"
+		filename = evertestTestPath + testname + ".test"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".test")
-		filename = "/var/evertest/net/netconf_" + testname + ".xml"
+		filename = evertestNetPath + "netconf_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
-		filename = "/var/evertest/net/portmap_" + testname + ".xml"
+		filename = evertestNetPath + "portmap_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".ports")
-		filename = "/home/jan/Schreibtisch/evertest/spruce_netcfg_evt.py"
+		filename = evertestRootPath + "spruce_netcfg_evt.py"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_netcfg.py")
-		filename = "/home/jan/Schreibtisch/evertest/spruce_util_evt.py"
+		filename = evertestRootPath + "spruce_util_evt.py"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
 	except:																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
 		e = sys.exc_info()[edl]
@@ -286,7 +293,7 @@ def evertestMain(testname, filename):
 		#Parse testID and all hostnames to ip-API to create initXML 
 		evertestSetupTestNetwork(testname)
 
-		path = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
+		path = evertestTestPath + testname + "/" + testname + ".conf"
 		root = xmltree.parse(path).getroot()
 
 		#Register VMs to network xml
@@ -329,7 +336,7 @@ def evertestMain(testname, filename):
 def runTest(testname):
 	try:
 		evertestExtractTest(testname)
-		filename = "/var/evertest/tests/" + testname + "/" + testname + ".conf"
+		filename = evertestTestPath + testname + "/" + testname + ".conf"
 		evertestMain(testname, filename)
 
 	except:
@@ -341,8 +348,10 @@ def runTest(testname):
 #--------------------------------------------------------------------------------------
 
 # Main call. Testname has to be given by --t="testname" (without quotes).
-
 givenTest = handleShellParam("n", 0)
+helpParam0 = handleShellParam("help", 0)
+helpParam1 = handleShellParam("h", 0)
+
 if givenTest != 0:
 	stat = 0
 	runTest(givenTest)
@@ -352,13 +361,12 @@ if givenTest != 0:
 		print "Test failed on starting up: " + str(givenTest)
 	time.sleep(10)
 	sys.exit(stat)
+
+if helpParam0 != 0 or helpParam1 != 0:
+	print "This help refers to spruce v" + spruceVersion + "."
+	print "Parameters:"
+	print "    -n             : Defines the used .py testfile"
+	print "    -h or --help   : Displays this help"
 else:
-	print "No testname given. (Give the --n=$testname parameter a try)"
+	print "No parameters given. Maybe you should have a look for the --help"
 	sys.exit(1)
-#helpParam = handleShellParam("help", 0)
-#if helpParam != 1:
-#	print "This is the Evertest Test Handler module.\nThis module was being created to pull up VMs with a testcase specified by the user."
-#	print "The following parameters can be used within this module:"
-#	print "     --help : Calls this help files."
-#	print "     --n=$testname : This specifies the used testcase. The name has to be given without file endings."
-#	sys.exit()

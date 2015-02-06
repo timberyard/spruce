@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest_core.py
 # Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Feb. 02, 2015
+# Last rev.: Feb. 06, 2015
 # -------------------------------------------------------------------------------------------------------
 #
 #                                       /\
@@ -35,6 +35,9 @@ from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
 hostIP = "192.168.0.223"
+
+#Paths
+evertestNetPath     = "/var/evertest/net/"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -71,7 +74,6 @@ def evertestGetName(xmlPath, ip):
 def evertestReceiveStatus(port, xmlPath):
 	try:
 		while (cnt == 0):
-#			print "Started a new server-socket."
 			buffer_size = 1024
 			message = "Got status."
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -90,8 +92,7 @@ def evertestReceiveStatus(port, xmlPath):
 				if (str(data) == "failed"):
 					print "The testcase has failed!"
 				conn.send(message)
-			conn.close()
-#			print "Connection closed."	
+			conn.close()	
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestReceiveStatus: \n" + str(e)
@@ -129,7 +130,7 @@ def evertestMonitorMain(port, xmlPath):
 
 givenTest = handleShellParam("n", 0)
 givenVM = handleShellParam("v", 0)
-xmlPath = "/var/evertest/net/netconf_" + givenTest + ".xml"
+xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
 #mode = handleShellParam("m", 0) # This option will let the user set the type of monitoring: Each vm seperated or the whole test
 mode = "test"					# Actually just testwide monitoring is used -> The used port in this mode is the first one on the portmap
 if givenTest != 0:
