@@ -11,3 +11,9 @@ There are four main modules used as testing framework:
 3. spruce_netcfg_client.py - Same thing as _host.py, just less functions
 4. spruce_util.py - This modules does what its' name says: It provides utilities.
 5. spruce_monitor.py - Monitoring module
+
+Also there are:
+
+1. vm.py - This is the script running on the vm that collects data and executes the test
+2. spruce-pkgmgr.jar - This little java applet lets the user create .test packages and place them at the host machine
+3. _evt.py files - This files are customized versions for use on the vm -> will be merged with non _evt files soon
