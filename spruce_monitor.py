@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
 # File: evertest_core.py
 # Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Feb. 06, 2015
+# Last rev.: Feb. 13, 2015
 # -------------------------------------------------------------------------------------------------------
 #
 #                                       /\
@@ -19,7 +19,8 @@
 #						   /__________\	\/ /__________\
 #
 # -------------------------------------------------------------------------------------------------------
-# This module is going to be the Evertest monitoring module.
+# This module is used as monitoring module. It provides functions to eather monitor messages sent by a single vm
+# or bundle messages by all VMs to testwide logs.
 # -------------------------------------------------------------------------------------------------------
 
 #Import base functions
@@ -68,6 +69,23 @@ def evertestGetName(xmlPath, ip):
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetName: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
+
+class testData:
+
+	warnings = []
+	errors = []
+	infos = []
+
+	def appendWarning(self, warningMsg):
+		self.warnings.append(["WARNING", warningMsg])
+
+	def appendError(self, errorMsg):
+		self.errors.append(["ERROR", errorMsg])
+
+	def appendInfo(self, infoMsg):
+		self.infos.append(["INFO", infoMsg])
+
+#--------------------------------------------------------------------------------------------------------
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
@@ -106,20 +124,8 @@ def evertestReceiveStatus(port, xmlPath):
 #--------------------------------------------------------------------------------------------------------
 def evertestMonitorMain(port, xmlPath):
 	try:
-#		path = xmlPath
-#		root = xmltree.parse(path).getroot()
-#		for child in root:
-#			if(child.tag == "vm"):
-#				hostname = child.get("name")
-#				print "der hostname der VM ist " + hostname
-#				ip = evertestGetVmIpAddr(test, hostname)
-#				print "The VMs IP is " + ip
-#				thread.start_new_thread(evertestReceiveStatus, (hostname, port,)) 	# every VM is monitored in it's own thread
-#				port = port + 1 													# because of the large number of threads, ports from 1024 to 49151 (well known ports (ICANN)) and 49152 to 65535 (dynamit/private ports)
-#				if((port + 1024) > 49151):
-#					print "Error: Maximum port number is 49151 (public ports)!"
-#					break
 		thread.start_new_thread(evertestReceiveStatus, (port, xmlPath))
+		print "Opened up monitor!"
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
 		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
 		print "Error in evertestMonitorMain: \n" + str(e)
@@ -130,13 +136,19 @@ def evertestMonitorMain(port, xmlPath):
 
 givenTest = handleShellParam("n", 0)
 givenVM = handleShellParam("v", 0)
-xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
 #mode = handleShellParam("m", 0) # This option will let the user set the type of monitoring: Each vm seperated or the whole test
 mode = "test"					# Actually just testwide monitoring is used -> The used port in this mode is the first one on the portmap
 if givenTest != 0:
 	cnt = 0
-	port = evertestGetVmPort(givenTest, "foo", mode)
-	evertestMonitorMain(port, xmlPath)
+	if givenTest:
+		try:
+			port = evertestGetVmPort(givenTest, "foo", mode)
+			xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
+			evertestMonitorMain(port, xmlPath)
+		except:
+			print "The given test does not exist!"
+	else:
+		print "Empty string given as testname!"
 else:
 	if givenTest == 0 and givenVM == 0:
 		print "No testname(--n=$testname) and vmname(--v=$vmname) given!"

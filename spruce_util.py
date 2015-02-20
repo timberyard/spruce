@@ -35,10 +35,12 @@ import sendfile
 import subprocess
 import socket
 import errno
+import json
 from lxml import etree as xmltree
 
 from glob			 import *
 from spruce_netcfg_client import *
+from collections import OrderedDict
 
 EVERTEST_TCP_FILE_PORT 		= 8021
 EVERTEST_SOCKET_MODE_SEND 	= 0
@@ -316,5 +318,48 @@ def evertestSendStatus(status):
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
 
-#actStatus = "Success!"
-#evertestSendStatus(actStatus)
+class testResult: #will be written to use warnings, errors and infos passed by monitor
+
+	vmname = ""
+	testname = ""
+	duration = ""
+
+	warnings = []
+	errors = []
+	infos = []
+
+	outfile = ""
+
+	def appendWarning(self, warningMsg):
+		self.warnings.append(["WARNING", warningMsg])
+
+	def appendError(self, errorMsg):
+		self.errors.append(["ERROR", errorMsg])
+
+	def appendInfo(self, infoMsg):
+		self.infos.append(["INFO", infoMsg])
+
+	def writeResults(self):
+		if self.outfile != "":
+			dic = {"vm" : {"name" : self.vmname}, "test" : {"name" : self.testname, "duration" : self.duration, "warnings" : 4, "errors" : 2}, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
+			with open(self.outfile, 'w') as outfile:
+				json.dump(dic, outfile, indent=3, sort_keys=True)
+		else:
+			print "No outfile specified! Writing aborted."
+
+
+result = testResult()
+
+result.vmname = "Ubuntu_14.01"
+result.testname = "cppcheck"
+result.duration = "0:21:19"
+result.appendWarning("Dis is a warning message. It warns.")
+result.appendWarning("Just another warning.")
+result.appendError("An error.")
+result.appendInfo("Dis is a infrostream. It streams infos.")
+i = 0
+while i != 3:
+	result.appendInfo("Just another information.")
+	i = i + 1
+result.outfile = "results.txt"
+result.writeResults()

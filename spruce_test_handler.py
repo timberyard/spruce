@@ -349,12 +349,13 @@ def runTest(testname):
 #--------------------------------------------------------------------------------------
 
 # Main call. Testname has to be given by --t="testname" (without quotes).
-givenTest = handleShellParam("n", 0)
+givenTest0 = handleShellParam("n", 0)
+givenTest1 = handleShellParam("name", 0) 
 helpParam0 = handleShellParam("help", 0)
 helpParam1 = handleShellParam("h", 0)
 stat = 1 #init test with error 1
 
-if givenTest != 0:
+if givenTest0 != 0 or givenTest1 != 0:
 	stat = 0
 	runTest(givenTest)
 #	print stat
@@ -368,7 +369,7 @@ if givenTest != 0:
 if helpParam0 != 0 or helpParam1 != 0:
 	print "This help refers to spruce v" + spruceVersion + "."
 	print "Parameters:"
-	print "    -n             : Defines the used .py testfile"
+	print "    -n or --name   : Defines the used .py testfile"
 	print "    -h or --help   : Displays this help"
 else:
 	print "No parameters given. Maybe you should have a look for the --help"

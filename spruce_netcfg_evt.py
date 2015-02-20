@@ -27,9 +27,9 @@
 #		/				    \ /	      everbase	  \
 #	   /_____________________V_____________________\
 #
-# Client version of the Evertest Network Handling Script. Only allows access to functionality available on
-# the Client Side and resolves local Paths accordingly. Refer to the Description in 
-# evertest_netcfg_client.py for further detail.
+# Client version of the Evertest Network Handling Script, customized for the use on testing machines. 
+#Only allows access to functionality available on the Client Side and resolves local Paths accordingly. 
+#Refer to the Description in evertest_netcfg_client.py for further detail.
 # -------------------------------------------------------------------------------------------------------
 
 
