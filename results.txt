@@ -1,0 +1,47 @@
+{
+   "output": {
+      "error": [
+         [
+            "ERROR", 
+            "An error."
+         ]
+      ], 
+      "info": [
+         [
+            "INFO", 
+            "Dis is a infrostream. It streams infos."
+         ], 
+         [
+            "INFO", 
+            "Just another information."
+         ], 
+         [
+            "INFO", 
+            "Just another information."
+         ], 
+         [
+            "INFO", 
+            "Just another information."
+         ]
+      ], 
+      "warning": [
+         [
+            "WARNING", 
+            "Dis is a warning message. It warns."
+         ], 
+         [
+            "WARNING", 
+            "Just another warning."
+         ]
+      ]
+   }, 
+   "test": {
+      "duration": "0:21:19", 
+      "errors": 2, 
+      "name": "cppcheck", 
+      "warnings": 4
+   }, 
+   "vm": {
+      "name": "Ubuntu_14.01"
+   }
+}
