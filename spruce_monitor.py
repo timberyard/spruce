@@ -32,11 +32,12 @@ import time
 from lxml import etree as xmltree
 
 #Import evertest modules
+from spruce_util import *
 from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
 hostIP = "192.168.0.223"
-
+hostIP = "192.168.11.156"
 #Paths
 evertestNetPath     = "/var/evertest/net/"
 
@@ -89,8 +90,9 @@ class testData:
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def evertestReceiveStatus(port, xmlPath):
+def evertestReceiveStatus(port, xmlPath, tData):
 	try:
+		cnt = 0
 		while (cnt == 0):
 			buffer_size = 1024
 			message = "Got status."
@@ -105,10 +107,19 @@ def evertestReceiveStatus(port, xmlPath):
 			while 1:
 				data = conn.recv(buffer_size)
 				if not data: break
-				print "Status: " + str(data)
-				print "~~~~~~~~~~~~~~~~~~~~"
-				if (str(data) == "failed"):
-					print "The testcase has failed!"
+
+				dataString = str(data)
+				status = dataString.split('-')[0]
+				sMessage = dataString.split('-')[1]
+				if "warning" in status:
+					tData.appendWarning(sMessage)
+				if "error" in status:
+					tData.appendError(sMessage)
+				if "info" in status:
+					tData.appendInfo(sMessage)
+				if "finish" in status:
+					writeCall(tData)
+					cnt = 1
 				conn.send(message)
 			conn.close()	
 	except:
@@ -122,9 +133,13 @@ def evertestReceiveStatus(port, xmlPath):
 #--------------------------------------------------------------------------------------------------------
 # Monitor main function; not sure if really needed yet 
 #--------------------------------------------------------------------------------------------------------
-def evertestMonitorMain(port, xmlPath):
+def evertestMonitorMain(givenTest):
 	try:
-		thread.start_new_thread(evertestReceiveStatus, (port, xmlPath))
+		mode = "test"
+		port = evertestGetVmPort(givenTest, "foo", mode)
+		xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
+		tData = testData()
+		thread.start_new_thread(evertestReceiveStatus, (port, xmlPath, tData))
 		print "Opened up monitor!"
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
 		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
@@ -134,25 +149,29 @@ def evertestMonitorMain(port, xmlPath):
 # EOF evertestMonitorMain
 #--------------------------------------------------------------------------------------------------------
 
-givenTest = handleShellParam("n", 0)
-givenVM = handleShellParam("v", 0)
+##givenTest = handleShellParam("n", 0)
+#givenTest = "install_apache"
+#givenVM = handleShellParam("v", 0)
 #mode = handleShellParam("m", 0) # This option will let the user set the type of monitoring: Each vm seperated or the whole test
-mode = "test"					# Actually just testwide monitoring is used -> The used port in this mode is the first one on the portmap
-if givenTest != 0:
-	cnt = 0
-	if givenTest:
-		try:
-			port = evertestGetVmPort(givenTest, "foo", mode)
-			xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
-			evertestMonitorMain(port, xmlPath)
-		except:
-			print "The given test does not exist!"
-	else:
-		print "Empty string given as testname!"
-else:
-	if givenTest == 0 and givenVM == 0:
-		print "No testname(--n=$testname) and vmname(--v=$vmname) given!"
-	elif givenTest == 0:
-		print "No testname given! Add it with --n=$testname."
-	elif givenVM == 0:
-		print "No vmname given! Add it with --v=$vmname."
+#mode = "test"					# Actually just testwide monitoring is used -> The used port in this mode is the first one on the portmap
+#if givenTest != 0:
+#	cnt = 0
+#	if givenTest:
+#		try:
+#			port = evertestGetVmPort(givenTest, "foo", mode)
+#			xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
+#			tData = testData()
+#			evertestMonitorMain(port, xmlPath, tData)
+#
+#		except:
+#			print "The given test does not exist!"
+##			print str(sys.exc_info()[edl])
+#	else:
+#		print "Empty string given as testname!"
+#else:
+#	if givenTest == 0 and givenVM == 0:
+#		print "No testname(--n=$testname) and vmname(--v=$vmname) given!"
+#	elif givenTest == 0:
+#		print "No testname given! Add it with --n=$testname."
+#	elif givenVM == 0:
+#		print "No vmname given! Add it with --v=$vmname."

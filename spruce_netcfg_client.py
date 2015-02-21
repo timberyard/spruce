@@ -174,7 +174,6 @@ def evertestGetVmPort(testName, vmName, mode):
 			if(node.tag == "entry"):
 				if(node.get("name") == vmName):
 					return int(node.get("port"))
-
 	elif mode == "test":
 		entry = root.find("entry")
 		port = int(entry.get("port"))
@@ -187,6 +186,7 @@ def evertestGetVmPort(testName, vmName, mode):
 
 #	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
 #	return "???.???.???.???"
+
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetVmMacAddr
 # -------------------------------------------------------------------------------------------------------

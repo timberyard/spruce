@@ -348,18 +348,15 @@ class testResult: #will be written to use warnings, errors and infos passed by m
 			print "No outfile specified! Writing aborted."
 
 
-result = testResult()
+def writeCall(tData):
+	result = testResult()
+	result.vmname = "Ubuntu_14.01"
+	result.testname = "cppcheck"
+	result.duration = "0:21:19"
+	result.warnings = tData.warnings
+	result.errors = tData.errors
+	result.infos = tData.infos
+ 	result.outfile = "results.txt"
+	result.writeResults()
 
-result.vmname = "Ubuntu_14.01"
-result.testname = "cppcheck"
-result.duration = "0:21:19"
-result.appendWarning("Dis is a warning message. It warns.")
-result.appendWarning("Just another warning.")
-result.appendError("An error.")
-result.appendInfo("Dis is a infrostream. It streams infos.")
-i = 0
-while i != 3:
-	result.appendInfo("Just another information.")
-	i = i + 1
-result.outfile = "results.txt"
-result.writeResults()
+

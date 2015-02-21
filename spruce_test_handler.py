@@ -68,6 +68,7 @@ import tarfile
 from lxml import etree as xmltree
 
 from spruce_netcfg_host import *
+from spruce_monitor import *
 
 spruceVersion = "0.1"
 
@@ -304,6 +305,10 @@ def evertestMain(testname, filename):
 		netCreate = "virsh net-create " + netPath
 		s = sub.Popen(netCreate, shell=True, stdout=sub.PIPE)
 		s.wait()
+
+		#Setup Monitor ####Has to be reworked!
+		thread.start_new_thread(evertestMonitorMain, (testname,))
+
 		print boarder
 
 		for child in root:
@@ -357,6 +362,7 @@ stat = 1 #init test with error 1
 
 if givenTest0 != 0 or givenTest1 != 0:
 	stat = 0
+	givenTest = "install_apache"
 	runTest(givenTest)
 #	print stat
 #	if(stat != 0):
