@@ -1,25 +1,4 @@
 # -------------------------------------------------------------------------------------------------------
-# File: test_handler.py
-# Author(s): RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Feb. 02, 2015
-# -------------------------------------------------------------------------------------------------------
-#
-#                                       /\
-#                                      /  \
-#									  /    \
-#									 /      \
-#									/		 \
-#								   /		  \
-#								  /____________\
-#								/\ \          / /\
-#							   /  \	\        / /  \
-#							  /    \ \      / /    \
-#							 /  	\ \    / /      \
-#							/    	 \ \  / /		 \
-#						   /__________\	\/ /__________\
-#
-# -------------------------------------------------------------------------------------------------------
-#
 # This Python module implements all main functionality relevant to the process of creating and managing VMs.
 # It provides routines to create and start VMs out of the information captured from the used .test file.
 # When the test handling process starts, all relevant information from the test is committed to a local Git

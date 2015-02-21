@@ -1,32 +1,4 @@
 # -------------------------------------------------------------------------------------------------------
-# File: evertest_netcfg_client.py
-# Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Feb. 02, 2015 (Jan)
-# -------------------------------------------------------------------------------------------------------
-#                            .
-#                           / \
-#						   /   \
-#						  /     \
-#						 /		 \
-#						/		  \
-#					   /		   \
-#					  /			    \
-#					 /				 \
-#					/				  \
-#				   /				   \
-#				  /_____________________\
-#				 / \				   / \
-#				/   \			      /	  \
-#			   /	 \			     /	   \
-#			  /		  \			    /	    \
-#			 /		   \		   /	  	 \
-#			/		    \	      /			  \
-#		   /			 \	     /			   \
-#		  /				  \	    /			    \
-#		 /				   \   /			 	 \
-#		/				    \ /	      everbase	  \
-#	   /_____________________V_____________________\
-#
 # Client version of the Evertest Network Handling Script, customized for the use on testing machines. 
 #Only allows access to functionality available on the Client Side and resolves local Paths accordingly. 
 #Refer to the Description in evertest_netcfg_client.py for further detail.

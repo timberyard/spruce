@@ -1,32 +1,4 @@
 # -------------------------------------------------------------------------------------------------------
-# File: evertest_netcfg_host.py
-# Author(s): HAUSWALD, Tom (EVB Everbase AG); RIEDEL, Jan (EVB Everbase AG)
-# Last rev.: Feb. 02, 2015 (Jan)
-# -------------------------------------------------------------------------------------------------------
-#                            .
-#                           / \
-#						   /   \
-#						  /     \
-#						 /		 \
-#						/		  \
-#					   /		   \
-#					  /			    \
-#					 /				 \
-#					/				  \
-#				   /				   \
-#				  /_____________________\
-#				 / \				   / \
-#				/   \			      /	  \
-#			   /	 \			     /	   \
-#			  /		  \			    /	    \
-#			 /		   \		   /	  	 \
-#			/		    \	      /			  \
-#		   /			 \	     /			   \
-#		  /				  \	    /			    \
-#		 /				   \   /			 	 \
-#		/				    \ /	      everbase	  \
-#	   /_____________________V_____________________\
-#
 # This Python module implements all functionality relevant to the configuration of libvirt VM networks 
 # (also referred to as Domains). It provides routines to assign static IP and MAC addresses to the
 # virtual machines and makes those retrievable by solely passing the VM's name string. When first setting
