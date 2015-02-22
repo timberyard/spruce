@@ -36,6 +36,7 @@ import sys
 import os
 import fileinput
 import subprocess as sub
+from threading import Thread
 import git
 
 #Tools
@@ -47,7 +48,7 @@ import tarfile
 from lxml import etree as xmltree
 
 from spruce_netcfg_host import *
-from spruce_monitor import *
+from spruce_monitor import evertestMonitorMain
 
 spruceVersion = "0.1"
 
@@ -285,9 +286,6 @@ def evertestMain(testname, filename):
 		s = sub.Popen(netCreate, shell=True, stdout=sub.PIPE)
 		s.wait()
 
-		#Setup Monitor ####Has to be reworked!
-		thread.start_new_thread(evertestMonitorMain, (testname,))
-
 		print boarder
 
 		for child in root:
@@ -303,6 +301,11 @@ def evertestMain(testname, filename):
 				print boarder
 				time.sleep(10)
 				evertestSendTest(hostname, testname)
+
+		#Setup Monitor
+		t = Thread(target=evertestMonitorMain, args=(testname, ))
+		t.start()
+		t.join()
 
 	except:
 		e = sys.exc_info()[edl]

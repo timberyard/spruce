@@ -10,6 +10,7 @@ import socket
 import thread
 import time
 from lxml import etree as xmltree
+from threading import Thread
 
 #Import evertest modules
 from spruce_util import *
@@ -17,7 +18,7 @@ from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
 hostIP = "192.168.0.223"
-hostIP = "192.168.11.156"
+hostIP = "192.168.11.181"
 #Paths
 evertestNetPath     = "/var/evertest/net/"
 
@@ -29,14 +30,6 @@ edl = EVERTEST_DEBUG_LEVEL
 #--------------------------------------------------------------------------------------
 # EOF Debug-Settings
 #--------------------------------------------------------------------------------------
-
-def handleShellParam(param, default):
-
-	for cmdarg in sys.argv:
-		if(("--" + param + "=") in cmdarg):
-			return str(cmdarg.replace(("--" + param + "="), ""))
-	return default
-
 
 def evertestGetName(xmlPath, ip):
 	try:
@@ -91,6 +84,7 @@ def evertestReceiveStatus(port, xmlPath, tData):
 				dataString = str(data)
 				status = dataString.split('-')[0]
 				sMessage = dataString.split('-')[1]
+
 				if "warning" in status:
 					tData.appendWarning(sMessage)
 				if "error" in status:
@@ -100,6 +94,7 @@ def evertestReceiveStatus(port, xmlPath, tData):
 				if "finish" in status:
 					writeCall(tData)
 					cnt = 1
+
 				conn.send(message)
 			conn.close()	
 	except:
@@ -119,8 +114,10 @@ def evertestMonitorMain(givenTest):
 		port = evertestGetVmPort(givenTest, "foo", mode)
 		xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
 		tData = testData()
-		thread.start_new_thread(evertestReceiveStatus, (port, xmlPath, tData))
+		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath, tData ))
+		t.start()
 		print "Opened up monitor!"
+		t.join()
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
 		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
 		print "Error in evertestMonitorMain: \n" + str(e)
@@ -128,30 +125,3 @@ def evertestMonitorMain(givenTest):
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestMonitorMain
 #--------------------------------------------------------------------------------------------------------
-
-##givenTest = handleShellParam("n", 0)
-#givenTest = "install_apache"
-#givenVM = handleShellParam("v", 0)
-#mode = handleShellParam("m", 0) # This option will let the user set the type of monitoring: Each vm seperated or the whole test
-#mode = "test"					# Actually just testwide monitoring is used -> The used port in this mode is the first one on the portmap
-#if givenTest != 0:
-#	cnt = 0
-#	if givenTest:
-#		try:
-#			port = evertestGetVmPort(givenTest, "foo", mode)
-#			xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
-#			tData = testData()
-#			evertestMonitorMain(port, xmlPath, tData)
-#
-#		except:
-#			print "The given test does not exist!"
-##			print str(sys.exc_info()[edl])
-#	else:
-#		print "Empty string given as testname!"
-#else:
-#	if givenTest == 0 and givenVM == 0:
-#		print "No testname(--n=$testname) and vmname(--v=$vmname) given!"
-#	elif givenTest == 0:
-#		print "No testname given! Add it with --n=$testname."
-#	elif givenVM == 0:
-#		print "No vmname given! Add it with --v=$vmname."
