@@ -16,4 +16,3 @@ Also there are:
 
 1. vm.py - This is the script running on the vm that collects data and executes the test
 2. spruce-pkgmgr.jar - This little java applet lets the user create .test packages and place them at the host machine
-3. _evt.py files - This files are customized versions for use on the vm -> will be merged with non _evt files soon
