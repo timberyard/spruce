@@ -17,6 +17,8 @@ from collections import OrderedDict
 EVERTEST_TCP_FILE_PORT 		= 8021
 EVERTEST_SOCKET_MODE_SEND 	= 0
 EVERTEST_SOCKET_MODE_RECV 	= 1
+EVERTEST_WORKER_ROOT_DIR	= "/mnt"
+HOST_IP 					= "192.168.0.184"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -45,8 +47,6 @@ def evertestRunBash(command):
 		process.communicate()
 		return 0
 	except:
-		e = sys.exc_info()[1]
-		print "Error occoured in evertestRunBash: \n" + str(e)
 		return 1
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestRunBash
@@ -59,7 +59,8 @@ def evertestRunBash(command):
 def evertestGetLocalName():
 
 	script = glob(EVERTEST_WORKER_ROOT_DIR + "/*.script")[0]
-	return script.replace(EVERTEST_WORKER_ROOT_DIR + "/", "").replace(".script", "")
+	replaceString = EVERTEST_WORKER_ROOT_DIR + "/"
+	return script.replace(replaceString, "").replace(".script", "")
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetLocalName
 # -------------------------------------------------------------------------------------------------------
@@ -71,7 +72,8 @@ def evertestGetLocalName():
 def evertestGetLocalTestId():
 
 	conf = glob(EVERTEST_WORKER_ROOT_DIR + "/*.conf")[0]
-	return conf.replace(EVERTEST_WORKER_ROOT_DIR + "/", "").replace(".conf", "")
+	replaceString = EVERTEST_WORKER_ROOT_DIR + "/"
+	return conf.replace(replaceString, "").replace(".conf", "")
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetLocalName
 # -------------------------------------------------------------------------------------------------------
@@ -168,7 +170,7 @@ def evertestSendFile(sock, filename, tid, receiver):
 
 
 # -------------------------------------------------------------------------------------------------------
-# Listens on TCP Port until File was received
+# Listens on TCP Port until File was received^######## TO BE FIXED 
 # -------------------------------------------------------------------------------------------------------
 def evertestRecvFile(sock):
 
@@ -272,7 +274,7 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 def evertestSendStatus(status):
 	try:
-		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test")
+		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
 		print "Monitor Port: " + str(EVERTEST_MONITOR_PORT)
 		receiverIp = HOST_IP
 		buffer_size = 1024
@@ -285,49 +287,6 @@ def evertestSendStatus(status):
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestSendStatus: \n" + str(e)
-
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
-
-#class testResult: #will be written to use warnings, errors and infos passed by monitor ## has to be reworked to display all VMs in one result.json
-#
-#	vmname = ""
-#	vmDuration = ""
-#	testname = ""
-#	duration = ""
-#
-#	warnings = []
-#	errors = []
-#	infos = []
-#
-#	outfile = ""
-#
-#	def appendWarning(self, warningMsg):
-##		self.warnings.append(["WARNING", warningMsg])
-#
-#	def appendError(self, errorMsg):
-#		self.errors.append(["ERROR", errorMsg])
-#
-##	def appendInfo(self, infoMsg):
-#		self.infos.append(["INFO", infoMsg])
-#
-#	def writeResults(self):
-#		if self.outfile != "":
-#			dic = {"vm" : {"name" : self.vmname, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}, "test" : {"name" : self.testname, "duration" : self.duration, "warnings" : 4, "errors" : 2}}
-##			with open(self.outfile, 'w') as outfile:
-#				json.dump(dic, outfile, indent=3, sort_keys=True)
-#		else:
-#			print "No outfile specified! Writing aborted."
-#
-#
-#def writeCall(tData):
-#	result = testResult()
-#	result.vmname = tData.vmname
-#	result.testname = tData.testname
-#	result.duration = tData.duration
-#	result.warnings = tData.warnings
-##	result.errors = tData.errors
-#	result.infos = tData.infos
- #	result.outfile = "results.txt"
-#	result.writeResults()

@@ -193,9 +193,9 @@ def evertestSendTest(vmname, testname):
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
 		filename = evertestNetPath + "portmap_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".ports")
-		filename = evertestRootPath + "spruce_netcfg_evt.py"
+		filename = evertestRootPath + "spruce_netcfg_client.py"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_netcfg.py")
-		filename = evertestRootPath + "spruce_util_evt.py"
+		filename = evertestRootPath + "spruce_util.py"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
 	except:																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
 		e = sys.exc_info()[edl]

@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------------------------------
-# Client version of the Evertest Network Handling Script. Only allows access to functionality available on
-# the Client Side and resolves local Paths accordingly. Refer to the Description in 
-# evertest_netcfg_client.py for further detail.
+# Client version of the Evertest Network Handling Script, customized for the use on testing machines. 
+#Only allows access to functionality available on the Client Side and resolves local Paths accordingly. 
+#Refer to the Description in evertest_netcfg_client.py for further detail.
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -25,8 +25,9 @@ EVERTEST_SILENT = False
 
 # Directory in which the virtual Machine's Script and the current
 # Test's Configuration File are stored
-EVERTEST_ROOT_PATH = "/mnt/scripts/"
+EVERTEST_ROOT_PATH = "/mnt"
 
+# Start of valid Range of Ports to run VM processes on. (On Host Machine)
 EVERTEST_VM_PORT_BASE = 1024;
 
 # Separation Line
@@ -146,6 +147,7 @@ def evertestGetVmPort(testName, vmName, mode):
 			if(node.tag == "entry"):
 				if(node.get("name") == vmName):
 					return int(node.get("port"))
+
 	elif mode == "test":
 		entry = root.find("entry")
 		port = int(entry.get("port"))
@@ -158,7 +160,6 @@ def evertestGetVmPort(testName, vmName, mode):
 
 #	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
 #	return "???.???.???.???"
-
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetVmMacAddr
 # -------------------------------------------------------------------------------------------------------
