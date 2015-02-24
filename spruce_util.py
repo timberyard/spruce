@@ -290,45 +290,44 @@ def evertestSendStatus(status):
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
 
-class testResult: #will be written to use warnings, errors and infos passed by monitor
-
-	vmname = ""
-	testname = ""
-	duration = ""
-
-	warnings = []
-	errors = []
-	infos = []
-
-	outfile = ""
-
-	def appendWarning(self, warningMsg):
-		self.warnings.append(["WARNING", warningMsg])
-
-	def appendError(self, errorMsg):
-		self.errors.append(["ERROR", errorMsg])
-
-	def appendInfo(self, infoMsg):
-		self.infos.append(["INFO", infoMsg])
-
-	def writeResults(self):
-		if self.outfile != "":
-			dic = {"vm" : {"name" : self.vmname}, "test" : {"name" : self.testname, "duration" : self.duration, "warnings" : 4, "errors" : 2}, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
-			with open(self.outfile, 'w') as outfile:
-				json.dump(dic, outfile, indent=3, sort_keys=True)
-		else:
-			print "No outfile specified! Writing aborted."
-
-
-def writeCall(tData):
-	result = testResult()
-	result.vmname = "Ubuntu_14.01"
-	result.testname = "cppcheck"
-	result.duration = "0:21:19"
-	result.warnings = tData.warnings
-	result.errors = tData.errors
-	result.infos = tData.infos
- 	result.outfile = "results.txt"
-	result.writeResults()
-
-
+#class testResult: #will be written to use warnings, errors and infos passed by monitor ## has to be reworked to display all VMs in one result.json
+#
+#	vmname = ""
+#	vmDuration = ""
+#	testname = ""
+#	duration = ""
+#
+#	warnings = []
+#	errors = []
+#	infos = []
+#
+#	outfile = ""
+#
+#	def appendWarning(self, warningMsg):
+##		self.warnings.append(["WARNING", warningMsg])
+#
+#	def appendError(self, errorMsg):
+#		self.errors.append(["ERROR", errorMsg])
+#
+##	def appendInfo(self, infoMsg):
+#		self.infos.append(["INFO", infoMsg])
+#
+#	def writeResults(self):
+#		if self.outfile != "":
+#			dic = {"vm" : {"name" : self.vmname, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}, "test" : {"name" : self.testname, "duration" : self.duration, "warnings" : 4, "errors" : 2}}
+##			with open(self.outfile, 'w') as outfile:
+#				json.dump(dic, outfile, indent=3, sort_keys=True)
+#		else:
+#			print "No outfile specified! Writing aborted."
+#
+#
+#def writeCall(tData):
+#	result = testResult()
+#	result.vmname = tData.vmname
+#	result.testname = tData.testname
+#	result.duration = tData.duration
+#	result.warnings = tData.warnings
+##	result.errors = tData.errors
+#	result.infos = tData.infos
+ #	result.outfile = "results.txt"
+#	result.writeResults()

@@ -17,10 +17,10 @@ from spruce_util import *
 from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
-hostIP = "192.168.0.223"
-hostIP = "192.168.11.181"
+hostIP = "192.168.0.184"
 #Paths
 evertestNetPath     = "/var/evertest/net/"
+evertestTestPath	= "/var/evertest/tests/"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -44,11 +44,18 @@ def evertestGetName(xmlPath, ip):
 		print "Error in evertestGetName: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 
-class testData:
+results = {}
+dics = {}
 
-	warnings = []
-	errors = []
-	infos = []
+class testData:
+	
+	def __init__(self, vmname):
+		self.vmname = vmname
+		self.duration = "??:??:??"
+		self.outfile = self.vmname + "_results.txt"
+		self.warnings = []
+		self.errors = []
+		self.infos = []
 
 	def appendWarning(self, warningMsg):
 		self.warnings.append(["WARNING", warningMsg])
@@ -59,11 +66,28 @@ class testData:
 	def appendInfo(self, infoMsg):
 		self.infos.append(["INFO", infoMsg])
 
+	def writeResults(self):
+		if self.outfile != "":
+			dic = {"vm" : {"name" : self.vmname, "time running" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
+			dics[self.vmname] = {"name" : self.vmname, "time running" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
+			with open(self.outfile, 'w') as outfile:
+				json.dump(dic, outfile, indent=3, sort_keys=True)
+		else:
+			print "No outfile specified! Writing aborted."
+
+
+def writeAggregatedResults(outfile):
+	if outfile != "":
+		dic = {"test" : {"vm" : [v for k, v in dics.items()]}, "general" : {"name" : "", "duration" : "", "warnings" : 4, "errors" : 2}}
+		with open(outfile, 'w') as outfile:
+			json.dump(dic, outfile, indent=3, sort_keys=True)
+	else:
+		print "No outfile specified! Writing aborted."
 #--------------------------------------------------------------------------------------------------------
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def evertestReceiveStatus(port, xmlPath, tData):
+def evertestReceiveStatus(port, xmlPath):
 	try:
 		cnt = 0
 		while (cnt == 0):
@@ -76,10 +100,13 @@ def evertestReceiveStatus(port, xmlPath, tData):
 
 			conn, addr = s.accept()
 			hostname = str(evertestGetName(xmlPath, addr[0]))
+
 			print "Received status from " + str(addr) + " [" + hostname + "] {" + time.strftime("%H:%M:%S") + "}"
 			while 1:
 				data = conn.recv(buffer_size)
 				if not data: break
+
+				tData = results[hostname]
 
 				dataString = str(data)
 				status = dataString.split('-')[0]
@@ -91,8 +118,10 @@ def evertestReceiveStatus(port, xmlPath, tData):
 					tData.appendError(sMessage)
 				if "info" in status:
 					tData.appendInfo(sMessage)
+					print "Append info to: " + tData.vmname
 				if "finish" in status:
-					writeCall(tData)
+					for k, v in results.items():
+						v.writeResults()
 					cnt = 1
 
 				conn.send(message)
@@ -113,15 +142,28 @@ def evertestMonitorMain(givenTest):
 		mode = "test"
 		port = evertestGetVmPort(givenTest, "foo", mode)
 		xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
-		tData = testData()
-		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath, tData ))
+		confXmlPath = evertestTestPath + givenTest + "/" + givenTest + ".conf"
+
+		#create testData objects for all VMs in the test
+		root = xmltree.parse(confXmlPath).getroot()
+		for child in root:
+			if (child.tag == "vm"):
+				name = str(child.get("name"))
+				results[name] = testData(name) #the testData objects created here have no names - they are just accessible via the index of results[]
+
+		for k, v in results.items():
+			print v.vmname
+
+		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
 		t.start()
 		print "Opened up monitor!"
 		t.join()
+		writeAggregatedResults("aggResults.txt")
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
 		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
 		print "Error in evertestMonitorMain: \n" + str(e)
-	while 1: pass
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestMonitorMain
 #--------------------------------------------------------------------------------------------------------
+
+#evertestMonitorMain("install_apache")

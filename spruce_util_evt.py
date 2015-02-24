@@ -16,7 +16,7 @@ EVERTEST_TCP_FILE_PORT 		= 8021
 EVERTEST_SOCKET_MODE_SEND 	= 0
 EVERTEST_SOCKET_MODE_RECV 	= 1
 EVERTEST_WORKER_ROOT_DIR	= "/mnt"
-HOST_IP 					= "192.168.0.223"
+HOST_IP 					= "192.168.0.184"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message

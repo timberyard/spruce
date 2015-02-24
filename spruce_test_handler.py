@@ -305,7 +305,7 @@ def evertestMain(testname, filename):
 		#Setup Monitor
 		t = Thread(target=evertestMonitorMain, args=(testname, ))
 		t.start()
-		t.join()
+		t.join() # Blocks a possible quitting of test_handler before the thread has finished
 
 	except:
 		e = sys.exc_info()[edl]
@@ -321,9 +321,6 @@ def evertestMain(testname, filename):
 def runTest(testname):
 	try:
 		evertestExtractTest(testname)
-#		if extract != 0:
-#			global stat
-#			stat = 1
 		filename = evertestTestPath + testname + "/" + testname + ".conf"
 		evertestMain(testname, filename)
 
