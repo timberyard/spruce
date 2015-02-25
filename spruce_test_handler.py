@@ -289,6 +289,11 @@ def evertestMain(testname, filename):
 
 		print boarder
 
+		t = Thread(target=evertestMonitorMain, args=(testname, ))
+		t.start()
+
+		print boarder
+
 		for child in root:
 			if(child.tag == "vm"):
 				hostname = child.get("name")
@@ -304,8 +309,6 @@ def evertestMain(testname, filename):
 				evertestSendTest(hostname, testname)
 
 		#Setup Monitor
-		t = Thread(target=evertestMonitorMain, args=(testname, ))
-		t.start()
 		t.join() # Blocks a possible quitting of test_handler before the thread has finished
 
 	except:
@@ -344,11 +347,6 @@ if givenTest0 != 0 or givenTest1 != 0:
 	stat = 0
 	givenTest = "install_apache"
 	runTest(givenTest)
-#	print stat
-#	if(stat != 0):
-#		print "Test failed on starting up: " + str(givenTest)
-#	if (stat == 0):
-#		print "Test started up successfully: " + str(givenTest)
 	time.sleep(10)
 	sys.exit(stat)
 
