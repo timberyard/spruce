@@ -7,7 +7,6 @@ import sendfile
 import subprocess
 import socket
 import errno
-import json
 from lxml import etree as xmltree
 
 from glob			 import *

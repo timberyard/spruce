@@ -194,10 +194,11 @@ def evertestSendTest(vmname, testname):
 		filename = evertestNetPath + "portmap_" + testname + ".xml"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".ports")
 		filename = evertestRootPath + "spruce_netcfg_client.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_netcfg_client.py")
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_netcfg_client.py")
 		filename = evertestRootPath + "spruce_util.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/evertest_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
-	except:																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
+		print boarder																# also still have to use the file called evertest_util not spruce* because of unmodified tests
+	except:																					
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
 		stat = 1

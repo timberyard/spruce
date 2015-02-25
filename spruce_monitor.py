@@ -9,6 +9,7 @@ import sys
 import socket
 import thread
 import time
+import json
 from lxml import etree as xmltree
 from threading import Thread
 
@@ -17,6 +18,7 @@ from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
 hostIP = "192.168.0.184"
+
 #Paths
 evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
@@ -149,9 +151,6 @@ def evertestMonitorMain(givenTest):
 			if (child.tag == "vm"):
 				name = str(child.get("name"))
 				results[name] = testData(name) #the testData objects created here have no names - they are just accessible via the index of results[]
-
-		for k, v in results.items():
-			print v.vmname
 
 		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
 		t.start()
