@@ -53,6 +53,7 @@ class testData:
 	def __init__(self, vmname):
 		self.vmname = vmname
 		self.finished = False
+		self.status = "Never started"
 		self.duration = "??:??:??"
 		self.outfile = self.vmname + "_results.txt"
 		self.warnings = []
@@ -70,7 +71,13 @@ class testData:
 
 	def writeResults(self):
 		if self.outfile != "":
-			dic = {"vm" : {"name" : self.vmname, "time running" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
+			if len(self.errors) != 0:
+				self.status = "Failed"
+			elif len(self.warnings) != 0:
+				self.status = "Success with warnings"
+			else:
+				self.status = "Success"
+			dic = {"vm" : {"name" : self.vmname,"status" : self.status, "time running" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
 			dics[self.vmname] = {"name" : self.vmname, "time running" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
 			with open(self.outfile, 'w') as outfile:
 				json.dump(dic, outfile, indent=3, sort_keys=True)
@@ -78,9 +85,17 @@ class testData:
 			print "No outfile specified! Writing aborted."
 
 
-def writeAggregatedResults(outfile):
+def writeAggregatedResults(testname, outfile):
 	if outfile != "":
-		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : "", "duration" : "", "warnings" : 4, "errors" : 2}}}
+		warnings = 0
+		errors = 0
+
+		for k, v in results.items():
+			warnings = warnings + len(v.warnings)
+		for k, v in results.items():
+			errors = errors + len(v.errors)
+
+		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : testname, "duration" : "", "warnings" : warnings, "errors" : errors}}}
 		with open(outfile, 'w') as outfile:
 			json.dump(dic, outfile, indent=3, sort_keys=True)
 	else:
@@ -120,7 +135,6 @@ def evertestReceiveStatus(port, xmlPath):
 					tData.appendError(sMessage)
 				if "info" in status:
 					tData.appendInfo(sMessage)
-					print "Append info to: " + tData.vmname
 				if "finish" in status:
 					tData.finished = True
 					tData.writeResults()
@@ -160,7 +174,7 @@ def evertestMonitorMain(givenTest):
 		t.start()
 		print "Opened up monitor!"
 		t.join()
-		writeAggregatedResults("aggResults.txt")
+		writeAggregatedResults(givenTest, "aggResults.txt")
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
 		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
 		print "Error in evertestMonitorMain: \n" + str(e)
