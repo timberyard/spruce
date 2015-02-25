@@ -52,6 +52,7 @@ class testData:
 	
 	def __init__(self, vmname):
 		self.vmname = vmname
+		self.finished = False
 		self.duration = "??:??:??"
 		self.outfile = self.vmname + "_results.txt"
 		self.warnings = []
@@ -79,7 +80,7 @@ class testData:
 
 def writeAggregatedResults(outfile):
 	if outfile != "":
-		dic = {"test" : {"vm" : [v for k, v in dics.items()]}, "general" : {"name" : "", "duration" : "", "warnings" : 4, "errors" : 2}}
+		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : "", "duration" : "", "warnings" : 4, "errors" : 2}}}
 		with open(outfile, 'w') as outfile:
 			json.dump(dic, outfile, indent=3, sort_keys=True)
 	else:
@@ -121,9 +122,12 @@ def evertestReceiveStatus(port, xmlPath):
 					tData.appendInfo(sMessage)
 					print "Append info to: " + tData.vmname
 				if "finish" in status:
-					for k, v in results.items():
-						v.writeResults()
-					cnt = 1
+					tData.finished = True
+					tData.writeResults()
+					if all(result.finished == True for key, result in results.items()):
+						for k, v in results.items():
+							v.writeResults()
+						cnt = 1
 
 				conn.send(message)
 			conn.close()	
@@ -163,5 +167,3 @@ def evertestMonitorMain(givenTest):
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestMonitorMain
 #--------------------------------------------------------------------------------------------------------
-
-#evertestMonitorMain("install_apache")
