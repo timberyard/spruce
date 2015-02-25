@@ -34,7 +34,6 @@ from lxml import etree as xmltree
 # RNG
 import random
 
-
 # -------------------------------------------------------------------------------------------------------
 # Checks whether a specific Command Line Argument was passed to Python. (--flag)
 # -------------------------------------------------------------------------------------------------------

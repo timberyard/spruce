@@ -13,7 +13,6 @@ from lxml import etree as xmltree
 from threading import Thread
 
 #Import evertest modules
-from spruce_util import *
 from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!

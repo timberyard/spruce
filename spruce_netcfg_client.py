@@ -18,7 +18,6 @@ from lxml import etree as xmltree
 # RNG
 import random
 
-
 # -------------------------------------------------------------------------------------------------------
 # Suppress Debug Output?
 EVERTEST_SILENT = False
