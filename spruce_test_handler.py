@@ -186,6 +186,7 @@ def evertestExtractTest(testname):
 #--------------------------------------------------------------------------------------
 def evertestSendTest(vmname, testname):
 	try:
+		print boarder
 		vmip = evertestGetVmIpAddr(testname, vmname)
 		filename = evertestTestPath + testname + ".test"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".test")
@@ -197,7 +198,7 @@ def evertestSendTest(vmname, testname):
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_netcfg_client.py")
 		filename = evertestRootPath + "spruce_util.py"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
-		print boarder																# also still have to use the file called evertest_util not spruce* because of unmodified tests
+																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
 	except:																					
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
@@ -292,19 +293,17 @@ def evertestMain(testname, filename):
 		t = Thread(target=evertestMonitorMain, args=(testname, ))
 		t.start()
 
-		print boarder
-
 		for child in root:
 			if(child.tag == "vm"):
 				hostname = child.get("name")
-				print "Hostname of VM: " + hostname
 				templateID = child.get("template")
-				print "Used template: " + templateID
 				testfile = child.get("script")
-				print "Used testfile: " + testfile
 				evertestConstructVM(templateID, hostname, testname)
-				print "Constructed VM."
+
 				print boarder
+
+				print "Constructed VM with hostname '" + hostname + "' from template '" + templateID + "' and attached '" + testfile + "' as testfile."
+
 				time.sleep(10)
 				evertestSendTest(hostname, testname)
 

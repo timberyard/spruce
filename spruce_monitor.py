@@ -17,12 +17,12 @@ from threading import Thread
 from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
-hostIP = "192.168.0.184"
+hostIP = "192.168.11.184"
 
 #Paths
 evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
-
+boarder 			= "~~~~~~~~~~"
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
 #--------------------------------------------------------------------------------------
@@ -85,8 +85,8 @@ class testData:
 			print "No outfile specified! Writing aborted."
 
 
-def writeAggregatedResults(testname, outfile):
-	if outfile != "":
+def writeAggregatedResults(testname, resfile):
+	if resfile != "":
 		warnings = 0
 		errors = 0
 
@@ -96,8 +96,10 @@ def writeAggregatedResults(testname, outfile):
 			errors = errors + len(v.errors)
 
 		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : testname, "running time" : "", "warnings" : warnings, "errors" : errors}}}
-		with open(outfile, 'w') as outfile:
+		with open(resfile, 'w') as outfile:
 			json.dump(dic, outfile, indent=3, sort_keys=True)
+		print boarder
+		print "Wrote aggregated results to " + str(resfile)
 	else:
 		print "No outfile specified! Writing aborted."
 #--------------------------------------------------------------------------------------------------------
@@ -118,6 +120,7 @@ def evertestReceiveStatus(port, xmlPath):
 			conn, addr = s.accept()
 			hostname = str(evertestGetName(xmlPath, addr[0]))
 
+			print boarder
 			print "Received status from " + str(addr) + " [" + hostname + "] {" + time.strftime("%H:%M:%S") + "}"
 			while 1:
 				data = conn.recv(buffer_size)
