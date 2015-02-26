@@ -2,6 +2,7 @@
 # File I/O
 import sys
 import os
+import time
 import subprocess as sub
 import shutil
 import tarfile
@@ -9,6 +10,9 @@ from subprocess import check_output
 
 workingDir = "/mnt/"
 filesPath  = "/mnt/files"
+
+while os.path.isfile("/mnt/spruce_util.py") != True:
+	time.sleep(1)
 
 def evertestExtractTest(dottest, testname):
 	try:
