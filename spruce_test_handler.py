@@ -59,6 +59,7 @@ evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
 evertestRootPath	= "/home/jan/Schreibtisch/evertest/"
 evertestImgPart 	= "/var/lib/libvirt/images/"
+vmPrefix			= "evertest_vm_"
 boarder       		= "~~~~~~~~~~"
 # -------------------------------------------------------------------------------------
 # EOF Paths
@@ -216,14 +217,14 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 	try:
 		# Create VM by increasing (or picking the lowest unused) the number in "evertest_vm_$number" for VMNames
 		creationIndex = 1
-		string = "virt-clone -o everbaseTemplate_" + templateID + " -n evertest_vm_" + str(creationIndex) + " -f " + evertestImgPart + "evertest_vm_" + str(creationIndex) + ".img"
+		string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(creationIndex) + " -f " + evertestImgPart + vmPrefix + str(creationIndex) + ".img"
 		o = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 		o.wait()
 		if o.returncode == 1:				
 			newIndex = 2
 			status = 1
 			while status != 0:
-				string = "virt-clone -o everbaseTemplate_" + templateID + " -n evertest_vm_" + str(newIndex) + " -f " + evertestImgPart + "evertest_vm_" + str(newIndex) + ".img"
+				string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(newIndex) + " -f " + evertestImgPart + vmPrefix + str(newIndex) + ".img"
 				p = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 				p.wait()
 				if p.returncode == 0:
@@ -233,7 +234,7 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 					status = 1
 		# Collect informations about created VM
 		number = newIndex
-		vmname = "evertest_vm_" + str(number)
+		vmname = vmPrefix + str(number)
 		allVm.append(vmname)
 		sysprep = "virt-sysprep --enable hostname --hostname " + hostname + " -a " + evertestImgPart + vmname + ".img"
 		# Set the VM#s hostname as the name given in test.conf
@@ -242,7 +243,7 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 		# Configure the VM's network XML for the test specific virtual network
 		evertestConfigureVMNetwork(testID, vmname, hostname)
 		# Start the created VM
-		vmStart = "virsh start evertest_vm_" + str(number)
+		vmStart = "virsh start " + vmPrefix + str(number)
 		pVmStart = sub.Popen(vmStart, shell=True, stdout=sub.PIPE)
 		pVmStart.wait()
 
@@ -310,9 +311,7 @@ def evertestMain(testname, filename):
 				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile,)) #threading speeds the testing a lot up
 				constructor.start() 
 
-
-		#Setup Monitor
-		t.join() # Blocks a possible quitting of test_handler before the threads have finished and prevents early vm removal
+		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal
 
 		#Shut down and delete VMs / remove networking files
 		for vm in allVm:

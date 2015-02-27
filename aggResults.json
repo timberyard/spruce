@@ -31,7 +31,7 @@
                ], 
                "warning": []
             }, 
-            "running time": "13.5391139984"
+            "running time": "12.8004190922"
          }, 
          {
             "name": "apache2", 
@@ -57,7 +57,7 @@
                ], 
                "warning": []
             }, 
-            "running time": "12.9788219929"
+            "running time": "12.2407579422"
          }
       ]
    }
