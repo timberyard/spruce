@@ -212,7 +212,7 @@ allVm = []
 #--------------------------------------------------------------------------------------
 # Construct the new VM(s)
 #--------------------------------------------------------------------------------------
-def evertestConstructVM(templateID, hostname, testID):
+def evertestConstructVM(templateID, hostname, testID, testfile):
 	try:
 		# Create VM by increasing (or picking the lowest unused) the number in "evertest_vm_$number" for VMNames
 		creationIndex = 1
@@ -245,6 +245,11 @@ def evertestConstructVM(templateID, hostname, testID):
 		vmStart = "virsh start evertest_vm_" + str(number)
 		pVmStart = sub.Popen(vmStart, shell=True, stdout=sub.PIPE)
 		pVmStart.wait()
+
+		print "Constructed VM with hostname '" + hostname + "' from template '" + templateID + "' and attached '" + testfile + "' as testfile."
+		time.sleep(10)
+		evertestSendTest(hostname, testID)
+
 
 	except:
 		e = sys.exc_info()[edl]
@@ -300,17 +305,11 @@ def evertestMain(testname, filename):
 				hostname = child.get("name")
 				templateID = child.get("template")
 				testfile = child.get("script")
-				evertestConstructVM(templateID, hostname, testname)
+#				evertestConstructVM(templateID, hostname, testname)
 
-#				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname)) #threads could make it possible to create more VMs at the "same" time !!!!!!!!!!!!!!!
-#				constructor.start() 
+				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile,)) #threading speeds the testing a lot up
+				constructor.start() 
 
-				print boarder
-
-				print "Constructed VM with hostname '" + hostname + "' from template '" + templateID + "' and attached '" + testfile + "' as testfile."
-
-				time.sleep(10)
-				evertestSendTest(hostname, testname)
 
 		#Setup Monitor
 		t.join() # Blocks a possible quitting of test_handler before the threads have finished and prevents early vm removal

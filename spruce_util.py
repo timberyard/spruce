@@ -3,6 +3,8 @@
 # to use during their testcase execution.
 # -------------------------------------------------------------------------------------------------------
 
+##!!!Don't actually use the SendFile functions!!!
+
 import sendfile
 import subprocess
 import socket
