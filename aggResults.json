@@ -1,0 +1,64 @@
+{
+   "test": {
+      "general": {
+         "errors": 0, 
+         "name": "install_apache", 
+         "running time": "", 
+         "warnings": 0
+      }, 
+      "vm": [
+         {
+            "name": "apache", 
+            "output": {
+               "error": [], 
+               "info": [
+                  [
+                     "INFO", 
+                     "Succesfully installed Apache"
+                  ], 
+                  [
+                     "INFO", 
+                     "Got Apaches status"
+                  ], 
+                  [
+                     "INFO", 
+                     "Succesfully stopped Apache"
+                  ], 
+                  [
+                     "INFO", 
+                     "Successfully completed test."
+                  ]
+               ], 
+               "warning": []
+            }, 
+            "running time": "13.5391139984"
+         }, 
+         {
+            "name": "apache2", 
+            "output": {
+               "error": [], 
+               "info": [
+                  [
+                     "INFO", 
+                     "Succesfully installed Apache"
+                  ], 
+                  [
+                     "INFO", 
+                     "Got Apaches status"
+                  ], 
+                  [
+                     "INFO", 
+                     "Succesfully stopped Apache"
+                  ], 
+                  [
+                     "INFO", 
+                     "Successfully completed test."
+                  ]
+               ], 
+               "warning": []
+            }, 
+            "running time": "12.9788219929"
+         }
+      ]
+   }
+}

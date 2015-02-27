@@ -1,0 +1,29 @@
+{
+   "vm": {
+      "name": "apache", 
+      "output": {
+         "error": [], 
+         "info": [
+            [
+               "INFO", 
+               "Succesfully installed Apache"
+            ], 
+            [
+               "INFO", 
+               "Got Apaches status"
+            ], 
+            [
+               "INFO", 
+               "Succesfully stopped Apache"
+            ], 
+            [
+               "INFO", 
+               "Successfully completed test."
+            ]
+         ], 
+         "warning": []
+      }, 
+      "running time": "13.5391139984", 
+      "status": "Success"
+   }
+}
