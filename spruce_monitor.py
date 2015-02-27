@@ -17,7 +17,7 @@ from threading import Thread
 from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
-hostIP = "192.168.11.184"
+hostIP = "192.168.0.184"
 
 #Paths
 evertestNetPath     = "/var/evertest/net/"
@@ -175,7 +175,10 @@ def evertestMonitorMain(givenTest):
 
 		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
 		t.start()
-		print "Opened up monitor!"
+		if t:
+			print "Opened up monitor!"
+		else:
+			print "Failed opening up monitor!"
 		t.join()
 		writeAggregatedResults(givenTest, "aggResults.json")
 	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed

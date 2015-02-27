@@ -17,7 +17,7 @@ EVERTEST_TCP_FILE_PORT 		= 8021
 EVERTEST_SOCKET_MODE_SEND 	= 0
 EVERTEST_SOCKET_MODE_RECV 	= 1
 EVERTEST_WORKER_ROOT_DIR	= "/mnt"
-HOST_IP 					= "192.168.11.184"
+HOST_IP 					= "192.168.0.184"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -169,7 +169,7 @@ def evertestSendFile(sock, filename, tid, receiver):
 
 
 # -------------------------------------------------------------------------------------------------------
-# Listens on TCP Port until File was received^######## TO BE FIXED 
+# Listens on TCP Port until File was received
 # -------------------------------------------------------------------------------------------------------
 def evertestRecvFile(sock):
 
@@ -190,7 +190,7 @@ def evertestRecvFile(sock):
 			break
 		else:
 			accum += 1
-			if accum >= 10:
+			if accum >= 10: #for what purpose?
 				print "Waiting for Connection from Sender..."
 				accum = 0
 
