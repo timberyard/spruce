@@ -59,4 +59,8 @@ if os.path.exists(srcFilesDir):
 
 #Execute script
 scriptFile = "/mnt/" + hostname + ".script"
-os.system("python -B " + scriptFile)
+
+runs = "python -B " + scriptFile
+run = sub.Popen(runs, shell=True, stdout=sub.PIPE)
+run.wait()
+

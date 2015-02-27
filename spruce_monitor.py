@@ -129,8 +129,8 @@ def evertestReceiveStatus(port, xmlPath):
 				tData = results[hostname]
 
 				dataString = str(data)
-				status = dataString.split('-')[0]
-				sMessage = dataString.split('-')[1]
+				status = dataString.split('- ')[0]
+				sMessage = dataString.split('- ')[1]
 
 				if "warning" in status:
 					tData.appendWarning(sMessage)
@@ -138,6 +138,8 @@ def evertestReceiveStatus(port, xmlPath):
 					tData.appendError(sMessage)
 				if "info" in status:
 					tData.appendInfo(sMessage)
+				if "time" in status:
+					tData.duration = sMessage
 				if "finish" in status:
 					tData.finished = True
 					tData.writeResults()
@@ -175,7 +177,7 @@ def evertestMonitorMain(givenTest):
 
 		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
 		t.start()
-		if t:
+		if t:   ##Should be checking if t is successful
 			print "Opened up monitor!"
 		else:
 			print "Failed opening up monitor!"
