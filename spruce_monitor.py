@@ -17,7 +17,7 @@ from threading import Thread
 from spruce_netcfg_host import *
 
 #hostIP = "192.168.0.223" # has to be changed for new machine!
-hostIP = "192.168.0.184"
+hostIP = "192.168.0.112"
 
 #Paths
 evertestNetPath     = "/var/evertest/net/"
@@ -106,8 +106,20 @@ def writeAggregatedResults(testname, resfile):
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def evertestReceiveStatus(port, xmlPath):
+def evertestReceiveStatus(givenTest):
 	try:
+		mode = "test"
+		port = evertestGetVmPort(givenTest, "foo", mode)
+		xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
+		confXmlPath = evertestTestPath + givenTest + "/" + givenTest + ".conf"
+
+		#create testData objects for all VMs in the test
+		root = xmltree.parse(confXmlPath).getroot()
+		for child in root:
+			if (child.tag == "vm"):
+				name = str(child.get("name"))
+				results[name] = testData(name) #the testData objects created here have no names - they are just accessible via the index of results[]
+
 		cnt = 0
 		while (cnt == 0):
 			buffer_size = 1024
@@ -149,7 +161,8 @@ def evertestReceiveStatus(port, xmlPath):
 						cnt = 1
 
 				conn.send(message)
-			conn.close()	
+			conn.close()
+		writeAggregatedResults(givenTest, "aggResults.json")
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestReceiveStatus: \n" + str(e)
@@ -161,31 +174,20 @@ def evertestReceiveStatus(port, xmlPath):
 #--------------------------------------------------------------------------------------------------------
 # Monitor main function; not sure if really needed yet 
 #--------------------------------------------------------------------------------------------------------
-def evertestMonitorMain(givenTest):
-	try:
-		mode = "test"
-		port = evertestGetVmPort(givenTest, "foo", mode)
-		xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
-		confXmlPath = evertestTestPath + givenTest + "/" + givenTest + ".conf"
-
-		#create testData objects for all VMs in the test
-		root = xmltree.parse(confXmlPath).getroot()
-		for child in root:
-			if (child.tag == "vm"):
-				name = str(child.get("name"))
-				results[name] = testData(name) #the testData objects created here have no names - they are just accessible via the index of results[]
-
-		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
-		t.start()
-		if t:   ##Should be checking if t is successful
-			print "Opened up monitor!"
-		else:
-			print "Failed opening up monitor!"
-		t.join()
-		writeAggregatedResults(givenTest, "aggResults.json")
-	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
-		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
-		print "Error in evertestMonitorMain: \n" + str(e)
+#def evertestMonitorMain(givenTest):
+#	try:
+#
+#		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
+#		t.start()
+#		if t:   ##Should be checking if t is successful
+#			print "Opened up monitor!"
+#		else:
+#			print "Failed opening up monitor!"
+#		t.join()
+#
+#	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
+#		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
+#		print "Error in evertestMonitorMain: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestMonitorMain
 #--------------------------------------------------------------------------------------------------------

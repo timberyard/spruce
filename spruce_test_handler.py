@@ -48,7 +48,7 @@ import tarfile
 from lxml import etree as xmltree
 
 from spruce_netcfg_host import *
-from spruce_monitor import evertestMonitorMain
+from spruce_monitor import evertestReceiveStatus
 
 spruceVersion = "0.1"
 
@@ -58,7 +58,7 @@ spruceVersion = "0.1"
 evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
 evertestRootPath	= "/home/jan/Schreibtisch/evertest/"
-evertestImgPart 	= "/var/lib/libvirt/images/"
+evertestImgPath 	= "/var/lib/libvirt/images/"
 vmPrefix			= "evertest_vm_"
 boarder       		= "~~~~~~~~~~"
 # -------------------------------------------------------------------------------------
@@ -208,7 +208,7 @@ def evertestSendTest(vmname, testname):
 # EOF evertestSendTest
 #--------------------------------------------------------------------------------------
 
-allVm = []
+allVm = [] #All started VMs names are appended here to be handled later on destroying process
 
 #--------------------------------------------------------------------------------------
 # Construct the new VM(s)
@@ -217,14 +217,14 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 	try:
 		# Create VM by increasing (or picking the lowest unused) the number in "evertest_vm_$number" for VMNames
 		creationIndex = 1
-		string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(creationIndex) + " -f " + evertestImgPart + vmPrefix + str(creationIndex) + ".img"
+		string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(creationIndex) + " -f " + evertestImgPath + vmPrefix + str(creationIndex) + ".img"
 		o = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 		o.wait()
 		if o.returncode == 1:				
 			newIndex = 2
 			status = 1
 			while status != 0:
-				string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(newIndex) + " -f " + evertestImgPart + vmPrefix + str(newIndex) + ".img"
+				string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(newIndex) + " -f " + evertestImgPath + vmPrefix + str(newIndex) + ".img"
 				p = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 				p.wait()
 				if p.returncode == 0:
@@ -236,7 +236,7 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 		number = newIndex
 		vmname = vmPrefix + str(number)
 		allVm.append(vmname)
-		sysprep = "virt-sysprep --enable hostname --hostname " + hostname + " -a " + evertestImgPart + vmname + ".img"
+		sysprep = "virt-sysprep --enable hostname --hostname " + hostname + " -a " + evertestImgPath + vmname + ".img"
 		# Set the VM#s hostname as the name given in test.conf
 		pSysprep = sub.Popen(sysprep, shell=True, stdout=sub.PIPE)
 		pSysprep.wait()
@@ -298,7 +298,7 @@ def evertestMain(testname, filename):
 
 		print boarder
 
-		t = Thread(target=evertestMonitorMain, args=(testname, ))
+		t = Thread(target=evertestReceiveStatus, args=(testname, ))
 		t.start()
 
 		for child in root:
@@ -308,8 +308,8 @@ def evertestMain(testname, filename):
 				testfile = child.get("script")
 #				evertestConstructVM(templateID, hostname, testname)
 
-				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile,)) #threading speeds the testing a lot up
-				constructor.start() 
+				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile)) #threading speeds the testing a lot up
+				constructor.start()
 
 		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal
 
@@ -317,10 +317,18 @@ def evertestMain(testname, filename):
 		for vm in allVm:
 			vmStop = "virsh shutdown " + vm
 			pVmStop = sub.Popen(vmStop, shell=True, stdout=sub.PIPE)
-			time.sleep(1) #just for debugging!!!!!!!!!!!!!!!!!!!!!!
-			pVmStop.wait()
 
-			undefine = "virsh undefine " + vm + " --storage " + evertestImgPart + vm + ".img"
+			grep = "virsh list | grep " + vm
+			grepF = sub.Popen(grep, shell=True, stdout=sub.PIPE)
+			out, err = grepF.communicate()
+
+			while out:
+				time.sleep(1)
+				grepF = sub.Popen(grep, shell=True, stdout=sub.PIPE)
+				out, err = grepF.communicate()
+
+
+			undefine = "virsh undefine " + vm + " --storage " + evertestImgPath + vm + ".img"
 			pUndefine = sub.Popen(undefine, shell=True, stdout=sub.PIPE)
 			pUndefine.wait()
 
@@ -360,7 +368,7 @@ def runTest(testname):
 #--------------------------------------------------------------------------------------
 
 # Main call. Testname has to be given by --t="testname" (without quotes).
-givenTest0 = handleShellParam("n", 0)
+givenTest0 = handleShellParam("n", 0),
 givenTest1 = handleShellParam("name", 0) 
 helpParam0 = handleShellParam("help", 0)
 helpParam1 = handleShellParam("h", 0)
