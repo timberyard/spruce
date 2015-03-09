@@ -141,19 +141,21 @@ def evertestGetNumber(testname):
 #--------------------------------------------------------------------------------------
 def evertestConfigureVMNetwork(testID, vmname, hostname):
 	try:
-#		exec("from " + "evertest_netcfg" + " import evertestGetVmMacAddr") 
 		mac = evertestGetVmMacAddr(testID, hostname)
-		netName = testID
-		openString = "/etc/libvirt/qemu/" + vmname +".xml"
-		macString = "<mac address='" + mac + "'/>\n"
-		networkString = "<source network='" + testID + "'/>\n"
+
+		path = "/etc/libvirt/qemu/" + vmname + ".xml"
+		tree = xmltree.parse(path)
+		root = tree.getroot()
+		for child in root.iter():
+			if(child.tag == "mac"):
+				child.set("address", mac)
+			if(child.tag == "source"):
+				child.set("network", testID)
+		tree.write(path)
 		defineVM = "virsh define /etc/libvirt/qemu/" + vmname + ".xml"
-		for line in fileinput.input(openString, inplace=True):
-			print line.replace("<mac address='", macString),
-		for line in fileinput.input(openString, inplace=True):
-			print line.replace("<source network=", networkString),
 		define = sub.Popen(defineVM, shell=True, stdout=sub.PIPE)
 		define.wait()
+
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestConfigureVMNetwork: \n" + str(e)
@@ -198,8 +200,7 @@ def evertestSendTest(vmname, testname):
 		filename = evertestRootPath + "spruce_netcfg_client.py"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_netcfg_client.py")
 		filename = evertestRootPath + "spruce_util.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_util.py") # */scripts/* is not set forever - tests have to be modified to search in ../testfolder
-																					# also still have to use the file called evertest_util not spruce* because of unmodified tests
+		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_util.py")
 	except:																					
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
@@ -240,8 +241,10 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 		# Set the VM#s hostname as the name given in test.conf
 		pSysprep = sub.Popen(sysprep, shell=True, stdout=sub.PIPE)
 		pSysprep.wait()
-		# Configure the VM's network XML for the test specific virtual network
+
+		# Configure the VM's network XML for the test specific virtual network		
 		evertestConfigureVMNetwork(testID, vmname, hostname)
+
 		# Start the created VM
 		vmStart = "virsh start " + vmPrefix + str(number)
 		pVmStart = sub.Popen(vmStart, shell=True, stdout=sub.PIPE)
@@ -306,7 +309,6 @@ def evertestMain(testname, filename):
 				hostname = child.get("name")
 				templateID = child.get("template")
 				testfile = child.get("script")
-#				evertestConstructVM(templateID, hostname, testname)
 
 				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile)) #threading speeds the testing a lot up
 				constructor.start()
@@ -332,6 +334,7 @@ def evertestMain(testname, filename):
 			pUndefine = sub.Popen(undefine, shell=True, stdout=sub.PIPE)
 			pUndefine.wait()
 
+
 		stopNet = "virsh net-destroy " + testname
 		pStopNet = sub.Popen(stopNet, shell=True, stdout=sub.PIPE)
 		pStopNet.wait()
@@ -342,6 +345,9 @@ def evertestMain(testname, filename):
 		os.remove(netcfg)
 		os.remove(portmap)
 		shutil.rmtree(folder)
+
+		print "Removed VMs and undefined Network"
+
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestMain: \n" + str(e)
