@@ -169,25 +169,3 @@ def evertestReceiveStatus(givenTest):
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------------------------------
-# Monitor main function; not sure if really needed yet 
-#--------------------------------------------------------------------------------------------------------
-#def evertestMonitorMain(givenTest):
-#	try:
-#
-#		t = Thread(target=evertestReceiveStatus, args=(port, xmlPath))
-#		t.start()
-#		if t:   ##Should be checking if t is successful
-#			print "Opened up monitor!"
-#		else:
-#			print "Failed opening up monitor!"
-#		t.join()
-#
-#	except:																			# maybe ports in /proc/sys/net/ipv4/ip_local_port_range has to be changed
-#		e = sys.exc_info()[edl]														# pass, so that the script does not exit because of no activity on a monitored port
-#		print "Error in evertestMonitorMain: \n" + str(e)
-#--------------------------------------------------------------------------------------------------------
-# EOF evertestMonitorMain
-#--------------------------------------------------------------------------------------------------------
