@@ -16,8 +16,7 @@ from threading import Thread
 #Import evertest modules
 from spruce_netcfg_host import *
 
-#hostIP = "192.168.0.223" # has to be changed for new machine!
-hostIP = "192.168.0.112"
+hostIP = "192.168.11.136"
 
 #Paths
 evertestNetPath     = "/var/evertest/net/"
@@ -119,7 +118,7 @@ def evertestReceiveStatus(givenTest):
 			if (child.tag == "vm"):
 				name = str(child.get("name"))
 				results[name] = testData(name) #the testData objects created here have no names - they are just accessible via the index of results[]
-
+				print "Added {} to result list.".format(name)
 		cnt = 0
 		while (cnt == 0):
 			buffer_size = 1024
@@ -129,14 +128,16 @@ def evertestReceiveStatus(givenTest):
 			s.bind((hostIP, (port)))	# Otherwise it would need its time until the socket can be reused and throw errors (multiple threads would be tried to start on the same socket without success) EVERTEST_MONITOR_PORT + port
 			s.listen(1)
 
-			conn, addr = s.accept()
-			hostname = str(evertestGetName(xmlPath, addr[0]))
-
-			print boarder
-			print "Received status from " + str(addr) + " [" + hostname + "] {" + time.strftime("%H:%M:%S") + "}"
 			while 1:
+				conn, addr = s.accept()
+				hostname = str(evertestGetName(xmlPath, addr[0]))
+
+				print boarder
+				print "Received status from " + str(addr) + " [" + hostname + "] {" + time.strftime("%H:%M:%S") + "}"
+
 				data = conn.recv(buffer_size)
-				if not data: break
+				if not data: 
+					break
 
 				tData = results[hostname]
 
@@ -144,24 +145,27 @@ def evertestReceiveStatus(givenTest):
 				status = dataString.split('- ')[0]
 				sMessage = dataString.split('- ')[1]
 
-				if "warning" in status:
+				if "warning" in status.lower():
 					tData.appendWarning(sMessage)
-				if "error" in status:
+				if "error" in status.lower():
 					tData.appendError(sMessage)
-				if "info" in status:
+				if "info" in status.lower():
 					tData.appendInfo(sMessage)
-				if "time" in status:
+				if "time" in status.lower():
 					tData.duration = sMessage
-				if "finish" in status:
+				if "finish" in status.lower():
 					tData.finished = True
 					tData.writeResults()
 					if all(result.finished == True for key, result in results.items()):
 						for k, v in results.items():
 							v.writeResults()
 						cnt = 1
+				else:
+					tData.appendInfo("Undefined message type: {}".format(sMessage))
 
 				conn.send(message)
 			conn.close()
+
 		writeAggregatedResults(givenTest, "aggResults.json")
 	except:
 		e = sys.exc_info()[edl]

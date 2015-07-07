@@ -191,6 +191,7 @@ def evertestSendTest(vmname, testname):
 	try:
 		print boarder
 		vmip = evertestGetVmIpAddr(testname, vmname)
+		print "VM-Name: {}, VM-IP: {}".format(vmname, vmip)
 		filename = evertestTestPath + testname + ".test"
 		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".test")
 		filename = evertestNetPath + "netconf_" + testname + ".xml"
@@ -222,23 +223,23 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 		o = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 		o.wait()
 		if o.returncode == 1:				
-			newIndex = 2
+			creationIndex = 2
 			status = 1
 			while status != 0:
-				string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(newIndex) + " -f " + evertestImgPath + vmPrefix + str(newIndex) + ".img"
+				string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(creationIndex) + " -f " + evertestImgPath + vmPrefix + str(creationIndex) + ".img"
 				p = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 				p.wait()
 				if p.returncode == 0:
 					status = 0
 				else:
-					newIndex = newIndex + 1
+					creationIndex = creationIndex + 1
 					status = 1
 		# Collect informations about created VM
-		number = newIndex
+		number = creationIndex
 		vmname = vmPrefix + str(number)
-		allVm.append(vmname)
-		sysprep = "virt-sysprep --enable hostname --hostname " + hostname + " -a " + evertestImgPath + vmname + ".img"
-		# Set the VM#s hostname as the name given in test.conf
+		allVm.append((vmname, hostname))
+		sysprep = "virt-sysprep --operations -ssh-userdir --hostname " + hostname + " -a " + evertestImgPath + vmname + ".img"
+		# Set the VMs hostname as the name given in test.conf
 		pSysprep = sub.Popen(sysprep, shell=True, stdout=sub.PIPE)
 		pSysprep.wait()
 
@@ -251,7 +252,7 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 		pVmStart.wait()
 
 		print "Constructed VM with hostname '" + hostname + "' from template '" + templateID + "' and attached '" + testfile + "' as testfile."
-		time.sleep(10)
+		time.sleep(15)
 		evertestSendTest(hostname, testID)
 
 
@@ -310,17 +311,24 @@ def evertestMain(testname, filename):
 				templateID = child.get("template")
 				testfile = child.get("script")
 
-				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile)) #threading speeds the testing a lot up
-				constructor.start()
+				evertestConstructVM(templateID, hostname, testname, testfile)
 
-		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal
+###				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile)) #threading speeds the testing a lot up
+###				constructor.start()
+###				constructor.join()
+		print "Joined monitoring thread"
+		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal 
 
-		#Shut down and delete VMs / remove networking files
+		#Shut down and delete VMs / remove networking filesx
 		for vm in allVm:
-			vmStop = "virsh shutdown " + vm
+			vmip = evertestGetVmIpAddr(testname, vm[1])
+			pRemoveKey = sub.Popen("ssh-keygen -f '/root/.ssh/known_hosts' -R {}".format(vmip), shell=True, stdout=sub.PIPE, stderr=sub.PIPE)
+			pRemoveKey.wait()
+
+			vmStop = "virsh shutdown " + str(vm[0])
 			pVmStop = sub.Popen(vmStop, shell=True, stdout=sub.PIPE)
 
-			grep = "virsh list | grep " + vm
+			grep = "virsh list | grep " + str(vm[0])
 			grepF = sub.Popen(grep, shell=True, stdout=sub.PIPE)
 			out, err = grepF.communicate()
 
@@ -329,10 +337,11 @@ def evertestMain(testname, filename):
 				grepF = sub.Popen(grep, shell=True, stdout=sub.PIPE)
 				out, err = grepF.communicate()
 
-
-			undefine = "virsh undefine " + vm + " --storage " + evertestImgPath + vm + ".img"
-			pUndefine = sub.Popen(undefine, shell=True, stdout=sub.PIPE)
+			undefine = "virsh undefine " + str(vm[0]) + " --storage " + evertestImgPath + str(vm[0]) + ".img"
+			pUndefine = sub.Popen(undefine, shell=True, stdout=sub.PIPE, stderr=sub.PIPE) #No errors and outs piped?
 			pUndefine.wait()
+
+			print "Undefined and removed VM: " + str(vm[0]) + " alias " + str(vm[1])
 
 
 		stopNet = "virsh net-destroy " + testname
@@ -374,17 +383,16 @@ def runTest(testname):
 #--------------------------------------------------------------------------------------
 
 # Main call. Testname has to be given by --t="testname" (without quotes).
-givenTest0 = handleShellParam("n", 0),
-givenTest1 = handleShellParam("name", 0) 
+givenTest = handleShellParam("n", 0)
 helpParam0 = handleShellParam("help", 0)
 helpParam1 = handleShellParam("h", 0)
 stat = 1 #init test with error 1
 
-if givenTest0 != 0 or givenTest1 != 0:
+if givenTest != 0:
 	stat = 0
-	givenTest = "install_apache"
+	#givenTest = "install_apache"
 	runTest(givenTest)
-	time.sleep(10)
+	###time.sleep(10)
 	sys.exit(stat)
 
 if helpParam0 != 0 or helpParam1 != 0:
