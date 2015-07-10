@@ -134,7 +134,7 @@ def evertestNetworkDir():
 def evertestGetNetconfPath(testName):
 
 	# Return the Path of the Configuration File residing on the Host
-	return EVERTEST_ROOT_PATH + "/net/netconf_" + testName + ".xml"
+	return "{}/net/netconf_{}.xml".format(EVERTEST_ROOT_PATH, testName)
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetNetconfPath
 # -------------------------------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ def evertestGetNetconfPath(testName):
 def evertestGetPortmapPath(testName):
 
 	# Return the Path of the Portmap File residing on the Host
-	return EVERTEST_ROOT_PATH + "/net/portmap_" + testName + ".xml"	
+	return "{}/net/portmap_{}.xml".format(EVERTEST_ROOT_PATH, testName)
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetNetconfPath
 # -------------------------------------------------------------------------------------------------------
