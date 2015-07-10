@@ -27,8 +27,10 @@ logger.addHandler(handler)
 workingDir = "/mnt/"
 filesPath  = "/mnt/files"
 
-while os.path.isfile("/mnt/spruce_util.py") != True:
+while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
 	time.sleep(1)
+
+from spruce_util import *
 
 def evertestExtractTest(dottest, testname):
 	try:
@@ -38,7 +40,13 @@ def evertestExtractTest(dottest, testname):
 		if tarfile.is_tarfile(extractString):
 			tfile.extractall(extractPath)
 		else:
-			logger.error("%s is not a tarfile.", extractString)
+			logger.error("%s is no tarfile or does not exist!", extractString)
+			raise IOError
+	except IOError:
+		logger.error("Tarfile not found, aborting!")
+		evertestSendStatus("[error] - Tarfile not found, aborting!")
+		evertestSendStatus("[finish]")
+		sys.exit("Tarfile not found, aborting!")
 	except:
 		e = sys.exc_info()[1]
 		logger.error("Error in evertestExtractTest: \n %s", str(e))
@@ -47,39 +55,37 @@ getHostname = "hostname"
 hostname = check_output(getHostname)
 hostname = hostname.replace('\n', '')
 
-dottest = check_output(["ls -LR /mnt/ | grep *.test*"], shell=True)
+dottest = check_output(["ls -LR /mnt/ | grep *.tar*"], shell=True)
 dottest = dottest.replace('\n', '')
-testname = check_output(["ls -LR /mnt/ | grep *.test* | cut -d'.' -f 1"], shell=True)
+testname = check_output(["ls -LR /mnt/ | grep *.tar* | cut -d'.' -f 1"], shell=True)
 testname = testname.replace('\n', '')
 
 evertestExtractTest(dottest, testname)
 
 #Script File
-scriptFile = hostname + ".script"
-sourceDir = "/mnt/" + testname + "/scripts/"
-destination = workingDir
-source = sourceDir + scriptFile
+source = "/mnt/{}/scripts/{}.script".format(testname, hostname)
 if (os.path.exists(source)):
-	shutil.copy(source, destination)
+	shutil.copy(source, workingDir)
 else:
-	logger.error("%s cannot be found!", source)
+	logger.error("Script file cannot be found!")
+	evertestSendStatus("[error] - Script file not found, aborting!")
+	evertestSendStatus("[finish]")
+	sys.exit("Script file not found, aborting!")
 
 #Config File
-configDir = "/mnt/" + testname + "/"
-config = configDir + testname + ".conf"
-source = config
-destination = workingDir
-if (os.path.exists(source)):
-	shutil.copy(source, destination)
+config = "/mnt/{0}/{0}.conf".format(testname)
+if (os.path.exists(config)):
+	shutil.copy(config, workingDir)
 else:
-	logger.error("%s cannot be found!", source)
+	logger.error("Config file cannot be found!")
+	evertestSendStatus("[error] - Config file not found, aborting!")
+	evertestSendStatus("[finish]")
+	sys.exit("Config file not found, aborting!")
 
 #Other files
-srcFilesDir = "/mnt/" + testname + "/files/"
+srcFilesDir = "/mnt/{}/files/".format(testname)
 if os.path.exists(srcFilesDir):
 	shutil.copytree(srcFilesDir, filesPath, symlinks=False, ignore=None)
-else:
-	logger.error("%s does not exist!", srcFilesDir)
 
 #Execute script
 scriptFile = "/mnt/" + hostname + ".script"
