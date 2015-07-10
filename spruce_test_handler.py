@@ -75,6 +75,8 @@ edl = EVERTEST_DEBUG_LEVEL
 # EOF Debug-Settings
 #--------------------------------------------------------------------------------------
 
+allVm = [] #All started VMs names are appended here to be handled later on destroying process
+
 # -------------------------------------------------------------------------------------------------------
 # Returns the Value assigned to a Command Line Parameter. (--param=value) 
 # If no Value was passed in, the specified default will be returned.
@@ -102,14 +104,11 @@ def handleShellParam(param, default):
 def evertestGetTestID(testname):
 	try:
 		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
-		if os.path.exists(path):
-			root = xmltree.parse(path).getroot()
-			for child in root:
-				if(child.tag == "info"):
-					value = child.get("id")
-					return value
-		else:
-			sys.exit("{} does not exist!".format(path))
+		root = xmltree.parse(path).getroot()
+		for child in root:
+			if(child.tag == "info"):
+				value = child.get("id")
+				return value
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetTestID: \n" + str(e)
@@ -125,14 +124,12 @@ def evertestGetTestID(testname):
 def evertestGetNumber(testname):
 	try:
 		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
-		if os.path.exists(path):
-			root = xmltree.parse(path).getroot()
-			for child in root:
-				if(child.tag == "info"):
-					value = child.get("vmcount")
-					return value
-		else:
-			sys.exit("{} does not exist!".format(path))
+		root = xmltree.parse(path).getroot()
+		for child in root:
+			if(child.tag == "info"):
+				value = child.get("vmcount")
+				return value
+
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetNumber: \n" + str(e)
@@ -148,7 +145,6 @@ def evertestGetNumber(testname):
 def evertestConfigureVMNetwork(testID, vmname, hostname):
 	try:
 		mac = evertestGetVmMacAddr(testID, hostname)
-
 		path = "/etc/libvirt/qemu/{}.xml".format(vmname)
 		if os.path.exists(path):
 			tree = xmltree.parse(path)
@@ -163,8 +159,9 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 			define = sub.Popen(defineVM, shell=True, stdout=sub.PIPE)
 			define.wait()
 		else:
-			sys.exit("{} does not exist!".format(path))
-
+			raise IOError
+	except IOError:
+		sys.exit("{} does not exist!".format(path))
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestConfigureVMNetwork: \n" + str(e)
@@ -181,11 +178,13 @@ def evertestExtractTest(testname):
 	try:
 		extractString = "{}{}.tar".format(evertestTestPath, testname)
 		extractPath = "{}{}/".format(evertestTestPath, testname)
-		if tarfile.is_tarfile(extractString):
+		if os.path.exists(extractString):
 			tfile = tarfile.open(extractString)
 			tfile.extractall(extractPath)
 		else:
-			sys.exit("No .tar package for the given test name found!")
+			raise IOError
+	except IOError:
+		sys.exit("No .tar package for the given test name found!")
 	except:
 		e = sys.exc_info()[edl]
 		print "Error occoured while extracting testTar file: \n" + str(e)
@@ -242,7 +241,6 @@ def evertestSendTest(vmname, testname):
 # EOF evertestSendTest
 #--------------------------------------------------------------------------------------
 
-allVm = [] #All started VMs names are appended here to be handled later on destroying process
 
 #--------------------------------------------------------------------------------------
 # Construct the new VM(s)
@@ -297,11 +295,6 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 # -------------------------------------------------------------------------------------
 
 
-#----------------------------------------------------------------------------------------------------------
-# EOF Defining functions
-#----------------------------------------------------------------------------------------------------------
-
-
 #--------------------------------------------------------------------------------------
 # Main (get informations, trigger VM-constructions,...)
 #--------------------------------------------------------------------------------------
@@ -319,10 +312,7 @@ def evertestMain(testname, filename):
 		evertestSetupTestNetwork(testname)
 
 		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
-		if os.path.exists(path):
-			root = xmltree.parse(path).getroot()
-		else:
-			sys.exit("{} does not exist!".format(path))
+		root = xmltree.parse(path).getroot()
 
 		#Register VMs to network xml
 		for child in root:
@@ -354,6 +344,12 @@ def evertestMain(testname, filename):
 		print "Joined monitoring thread"
 		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal 
 
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in evertestMain: \n" + str(e)
+		stat = 1
+
+	finally:
 		#Shut down and delete VMs / remove networking filesx
 		for vm in allVm:
 			vmip = evertestGetVmIpAddr(testname, vm[1])
@@ -391,11 +387,6 @@ def evertestMain(testname, filename):
 		shutil.rmtree(folder)
 
 		print "Removed VMs and undefined Network"
-
-	except:
-		e = sys.exc_info()[edl]
-		print "Error in evertestMain: \n" + str(e)
-		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF evertestMain
 #-------------------------------------------------------------------
@@ -406,9 +397,13 @@ def evertestMain(testname, filename):
 def runTest(testname):
 	try:
 		evertestExtractTest(testname) #Check if extract result 0
-		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
-		evertestMain(testname, filename)
-
+		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname) #not checked any more after this point
+		if os.path.exists(filename):
+			evertestMain(testname, filename)
+		else:
+			raise IOError
+	except IOError:
+		sys.exit("{} does not exist!".format(filename))
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in run: \n" + str(e)

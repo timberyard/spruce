@@ -16,7 +16,7 @@ from threading import Thread
 #Import evertest modules
 from spruce_netcfg_host import *
 
-hostIP = "192.168.11.136"
+hostIP = "192.168.0.226"
 
 #Paths
 evertestNetPath     = "/var/evertest/net/"
@@ -109,8 +109,8 @@ def evertestReceiveStatus(givenTest):
 	try:
 		mode = "test"
 		port = evertestGetVmPort(givenTest, "foo", mode)
-		xmlPath = evertestNetPath + "netconf_" + givenTest + ".xml"
-		confXmlPath = evertestTestPath + givenTest + "/" + givenTest + ".conf"
+		xmlPath = "{}netconf_{}.xml".format(evertestNetPath, givenTest)
+		confXmlPath = "{0}{1}/{1}.conf".format(evertestTestPath, givenTest)
 
 		#create testData objects for all VMs in the test
 		root = xmltree.parse(confXmlPath).getroot()
@@ -128,12 +128,13 @@ def evertestReceiveStatus(givenTest):
 			s.bind((hostIP, (port)))	# Otherwise it would need its time until the socket can be reused and throw errors (multiple threads would be tried to start on the same socket without success) EVERTEST_MONITOR_PORT + port
 			s.listen(1)
 
-			while 1:
+			finished = 0
+			while (finished == 0):
 				conn, addr = s.accept()
 				hostname = str(evertestGetName(xmlPath, addr[0]))
 
 				print boarder
-				print "Received status from " + str(addr) + " [" + hostname + "] {" + time.strftime("%H:%M:%S") + "}"
+				print "Received status from {0} [{1}] {{\"{2}\"}}".format(str(addr), hostname, time.strftime("%H:%M:%S"))
 
 				data = conn.recv(buffer_size)
 				if not data: 
@@ -155,15 +156,16 @@ def evertestReceiveStatus(givenTest):
 					tData.duration = sMessage
 				if "finish" in status.lower():
 					tData.finished = True
-					tData.writeResults()
 					if all(result.finished == True for key, result in results.items()):
 						for k, v in results.items():
 							v.writeResults()
 						cnt = 1
+						finished = 1
 				else:
 					tData.appendInfo("Undefined message type: {}".format(sMessage))
 
 				conn.send(message)
+
 			conn.close()
 
 		writeAggregatedResults(givenTest, "aggResults.json")
