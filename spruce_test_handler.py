@@ -146,7 +146,7 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 	try:
 		mac = evertestGetVmMacAddr(testID, hostname)
 		path = "/etc/libvirt/qemu/{}.xml".format(vmname)
-		if os.path.exists(path):
+		if os.path.lexists(path):
 			tree = xmltree.parse(path)
 			root = tree.getroot()
 			for child in root.iter():
@@ -178,7 +178,7 @@ def evertestExtractTest(testname):
 	try:
 		extractString = "{}{}.tar".format(evertestTestPath, testname)
 		extractPath = "{}{}/".format(evertestTestPath, testname)
-		if os.path.exists(extractString):
+		if os.path.lexists(extractString):
 			tfile = tarfile.open(extractString)
 			tfile.extractall(extractPath)
 		else:
@@ -204,31 +204,31 @@ def evertestSendTest(vmname, testname):
 		print "VM-Name: {}, VM-IP: {}".format(vmname, vmip)
 
 		filename = "{}{}.tar".format(evertestTestPath, testname)
-		if os.path.exists(filename):
+		if os.path.lexists(filename):
 			os.system("scp {} tester@{}:/mnt/{}.tar".format(filename, vmip, testname))
 		else:
 			print "{} does not exist! not sent!".format(filename)
 
 		filename = "{}netconf_{}.xml".format(evertestNetPath, testname)
-		if os.path.exists(filename):
+		if os.path.lexists(filename):
 			os.system("scp {} tester@{}:/mnt/{}.net".format(filename, vmip, testname))
 		else:
 			print "{} does not exist! not sent!".format(filename)
 
 		filename = "{}portmap_{}.xml".format(evertestNetPath, testname)
-		if os.path.exists(filename):
+		if os.path.lexists(filename):
 			os.system("scp {} tester@{}:/mnt/{}.ports".format(filename, vmip, testname))
 		else:
 			print "{} does not exist! not sent!".format(filename)
 
 		filename = "{}spruce_netcfg_client.py".format(evertestRootPath)
-		if os.path.exists(filename):
+		if os.path.lexists(filename):
 			os.system("scp {} tester@{}:/mnt/spruce_netcfg_client.py".format(filename, vmip))
 		else:
 			print "{} does not exist! not sent!".format(filename)
 
 		filename = "{}spruce_util.py".format(evertestRootPath)
-		if os.path.exists(filename):
+		if os.path.lexists(filename):
 			os.system("scp {} tester@{}:/mnt/spruce_util.py".format(filename, vmip))
 		else:
 			print "{} does not exist! not sent!".format(filename)
@@ -321,7 +321,7 @@ def evertestMain(testname, filename):
 				evertestRegisterVm(testname, hostname)
 
 		netPath = evertestGetNetconfPath(testname)
-		if os.path.exists(netPath):
+		if os.path.lexists(netPath):
 			netCreate = "virsh net-create {}".format(netPath) #this creates the before defined network in libvirt
 			s = sub.Popen(netCreate, shell=True, stdout=sub.PIPE)
 			s.wait()
@@ -398,7 +398,7 @@ def runTest(testname):
 	try:
 		evertestExtractTest(testname) #Check if extract result 0
 		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname) #not checked any more after this point
-		if os.path.exists(filename):
+		if os.path.lexists(filename):
 			evertestMain(testname, filename)
 		else:
 			raise IOError
