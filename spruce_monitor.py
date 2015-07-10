@@ -144,7 +144,10 @@ def evertestReceiveStatus(givenTest):
 
 				dataString = str(data)
 				status = dataString.split('- ')[0]
-				sMessage = dataString.split('- ')[1]
+				if '-' in dataString:
+					sMessage = dataString.split('- ', 1)[1] #only split string at the first occurence of "-"
+				else:
+					sMessage = "*no message transmitted*"
 
 				if "warning" in status.lower():
 					tData.appendWarning(sMessage)

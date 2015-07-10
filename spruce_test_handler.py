@@ -305,8 +305,8 @@ def evertestMain(testname, filename):
 
 		#Analyse and echo out
 		print "ID of running testcase: {}".format(testname)
-		numberofvm = str(evertestGetNumber(testname))
-		print "Number of VM created in this testcase: {}".format(numberofvm)
+		vmcount = str(evertestGetNumber(testname))
+		print "Number of VM created in this testcase: {}".format(vmcount)
 
 		#Parse testID and all hostnames to ip-API to create initXML 
 		evertestSetupTestNetwork(testname)

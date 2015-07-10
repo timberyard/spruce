@@ -19,7 +19,7 @@ EVERTEST_TCP_FILE_PORT 		= 8021
 EVERTEST_SOCKET_MODE_SEND 	= 0
 EVERTEST_SOCKET_MODE_RECV 	= 1
 EVERTEST_WORKER_ROOT_DIR	= "/mnt"
-HOST_IP 					= "192.168.11.131"
+HOST_IP 					= "192.168.0.226"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -283,7 +283,7 @@ def evertestSendStatus(status):
 		s.connect((receiverIp, EVERTEST_MONITOR_PORT))
 		s.send(status)
 		data = s.recv(buffer_size)
-		s.close
+		s.close()
 		print "Got answer: " + str(data)
 	except:
 		e = sys.exc_info()[edl]
