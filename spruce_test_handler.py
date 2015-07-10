@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------------
 # This Python module implements all main functionality relevant to the process of creating and managing VMs.
-# It provides routines to create and start VMs out of the information captured from the used .test file.
+# It provides routines to create and start VMs out of the information captured from the used .tar file.
 # When the test handling process starts, all relevant information from the test is committed to a local Git
 # repository. Then all the VMs are being created, their hostnames are set to the specified VM-name (in test
 # config), they get IP and MAC addressesb and are being started up. Every single test runs in its own virtual
@@ -101,12 +101,15 @@ def handleShellParam(param, default):
 #--------------------------------------------------------------------------------------
 def evertestGetTestID(testname):
 	try:
-		path = evertestTestPath + testname + "/" + testname + ".conf"
-		root = xmltree.parse(path).getroot()
-		for child in root:
-			if(child.tag == "info"):
-				value = child.get("id")
-				return value
+		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
+		if os.path.exists(path):
+			root = xmltree.parse(path).getroot()
+			for child in root:
+				if(child.tag == "info"):
+					value = child.get("id")
+					return value
+		else:
+			sys.exit("{} does not exist!".format(path))
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetTestID: \n" + str(e)
@@ -121,12 +124,15 @@ def evertestGetTestID(testname):
 #--------------------------------------------------------------------------------------
 def evertestGetNumber(testname):
 	try:
-		path = evertestTestPath + testname + "/" + testname + ".conf"
-		root = xmltree.parse(path).getroot()
-		for child in root:
-			if(child.tag == "info"):
-				value = child.get("vmcount")
-				return value
+		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
+		if os.path.exists(path):
+			root = xmltree.parse(path).getroot()
+			for child in root:
+				if(child.tag == "info"):
+					value = child.get("vmcount")
+					return value
+		else:
+			sys.exit("{} does not exist!".format(path))
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in evertestGetNumber: \n" + str(e)
@@ -143,18 +149,21 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 	try:
 		mac = evertestGetVmMacAddr(testID, hostname)
 
-		path = "/etc/libvirt/qemu/" + vmname + ".xml"
-		tree = xmltree.parse(path)
-		root = tree.getroot()
-		for child in root.iter():
-			if(child.tag == "mac"):
-				child.set("address", mac)
-			if(child.tag == "source"):
-				child.set("network", testID)
-		tree.write(path)
-		defineVM = "virsh define /etc/libvirt/qemu/" + vmname + ".xml"
-		define = sub.Popen(defineVM, shell=True, stdout=sub.PIPE)
-		define.wait()
+		path = "/etc/libvirt/qemu/{}.xml".format(vmname)
+		if os.path.exists(path):
+			tree = xmltree.parse(path)
+			root = tree.getroot()
+			for child in root.iter():
+				if(child.tag == "mac"):
+					child.set("address", mac)
+				if(child.tag == "source"):
+					child.set("network", testID)
+			tree.write(path)
+			defineVM = "virsh define /etc/libvirt/qemu/{}.xml".format(vmname)
+			define = sub.Popen(defineVM, shell=True, stdout=sub.PIPE)
+			define.wait()
+		else:
+			sys.exit("{} does not exist!".format(path))
 
 	except:
 		e = sys.exc_info()[edl]
@@ -166,18 +175,20 @@ def evertestConfigureVMNetwork(testID, vmname, hostname):
 
 
 #--------------------------------------------------------------------------------------
-# Unzip the .test.tar file
+# Unzip the test tar file
 #--------------------------------------------------------------------------------------
 def evertestExtractTest(testname):
 	try:
-		extractString = evertestTestPath + testname + ".test"
-		extractPath = evertestTestPath + testname + "/"
-		tfile = tarfile.open(extractString)
+		extractString = "{}{}.tar".format(evertestTestPath, testname)
+		extractPath = "{}{}/".format(evertestTestPath, testname)
 		if tarfile.is_tarfile(extractString):
+			tfile = tarfile.open(extractString)
 			tfile.extractall(extractPath)
+		else:
+			sys.exit("No .tar package for the given test name found!")
 	except:
 		e = sys.exc_info()[edl]
-		print "Error occoured while extracting .test file: \n" + str(e)
+		print "Error occoured while extracting testTar file: \n" + str(e)
 		stat = 1
 #--------------------------------------------------------------------------------------
 # EOF evertestExtractTest
@@ -192,16 +203,37 @@ def evertestSendTest(vmname, testname):
 		print boarder
 		vmip = evertestGetVmIpAddr(testname, vmname)
 		print "VM-Name: {}, VM-IP: {}".format(vmname, vmip)
-		filename = evertestTestPath + testname + ".test"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".test")
-		filename = evertestNetPath + "netconf_" + testname + ".xml"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".net")
-		filename = evertestNetPath + "portmap_" + testname + ".xml"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/" + testname + ".ports")
-		filename = evertestRootPath + "spruce_netcfg_client.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_netcfg_client.py")
-		filename = evertestRootPath + "spruce_util.py"
-		os.system("scp " + filename + " tester@" + vmip + ":/mnt/spruce_util.py")
+
+		filename = "{}{}.tar".format(evertestTestPath, testname)
+		if os.path.exists(filename):
+			os.system("scp {} tester@{}:/mnt/{}.tar".format(filename, vmip, testname))
+		else:
+			print "{} does not exist! not sent!".format(filename)
+
+		filename = "{}netconf_{}.xml".format(evertestNetPath, testname)
+		if os.path.exists(filename):
+			os.system("scp {} tester@{}:/mnt/{}.net".format(filename, vmip, testname))
+		else:
+			print "{} does not exist! not sent!".format(filename)
+
+		filename = "{}portmap_{}.xml".format(evertestNetPath, testname)
+		if os.path.exists(filename):
+			os.system("scp {} tester@{}:/mnt/{}.ports".format(filename, vmip, testname))
+		else:
+			print "{} does not exist! not sent!".format(filename)
+
+		filename = "{}spruce_netcfg_client.py".format(evertestRootPath)
+		if os.path.exists(filename):
+			os.system("scp {} tester@{}:/mnt/spruce_netcfg_client.py".format(filename, vmip))
+		else:
+			print "{} does not exist! not sent!".format(filename)
+
+		filename = "{}spruce_util.py".format(evertestRootPath)
+		if os.path.exists(filename):
+			os.system("scp {} tester@{}:/mnt/spruce_util.py".format(filename, vmip))
+		else:
+			print "{} does not exist! not sent!".format(filename)
+
 	except:																					
 		e = sys.exc_info()[edl]
 		print "Error occoured in evertestSendTest: \n" + str(e)
@@ -219,26 +251,26 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 	try:
 		# Create VM by increasing (or picking the lowest unused) the number in "evertest_vm_$number" for VMNames
 		creationIndex = 1
-		string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(creationIndex) + " -f " + evertestImgPath + vmPrefix + str(creationIndex) + ".img"
+		string = "virt-clone -o {0} -n {1}{2} -f {3}{1}{2}.img".format(templateID, vmPrefix, str(creationIndex), evertestImgPath)
 		o = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 		o.wait()
 		if o.returncode == 1:				
 			creationIndex = 2
 			status = 1
 			while status != 0:
-				string = "virt-clone -o " + templateID + " -n " + vmPrefix + str(creationIndex) + " -f " + evertestImgPath + vmPrefix + str(creationIndex) + ".img"
+				string = "virt-clone -o {0} -n {1}{2} -f {3}{1}{2}.img".format(templateID, vmPrefix, str(creationIndex), evertestImgPath)
 				p = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
 				p.wait()
 				if p.returncode == 0:
 					status = 0
 				else:
-					creationIndex = creationIndex + 1
+					creationIndex += 1
 					status = 1
 		# Collect informations about created VM
 		number = creationIndex
 		vmname = vmPrefix + str(number)
 		allVm.append((vmname, hostname))
-		sysprep = "virt-sysprep --operations -ssh-userdir --hostname " + hostname + " -a " + evertestImgPath + vmname + ".img"
+		sysprep = "virt-sysprep --operations -ssh-userdir --hostname {} -a {}{}.img".format(hostname, evertestImgPath, vmname)
 		# Set the VMs hostname as the name given in test.conf
 		pSysprep = sub.Popen(sysprep, shell=True, stdout=sub.PIPE)
 		pSysprep.wait()
@@ -247,11 +279,11 @@ def evertestConstructVM(templateID, hostname, testID, testfile):
 		evertestConfigureVMNetwork(testID, vmname, hostname)
 
 		# Start the created VM
-		vmStart = "virsh start " + vmPrefix + str(number)
+		vmStart = "virsh start {}{}".format(vmPrefix, str(number))
 		pVmStart = sub.Popen(vmStart, shell=True, stdout=sub.PIPE)
 		pVmStart.wait()
 
-		print "Constructed VM with hostname '" + hostname + "' from template '" + templateID + "' and attached '" + testfile + "' as testfile."
+		print "Constructed VM with hostname '{}' from template '{}' and attached '{}' as testfile.".format(hostname, templateID, testfile)
 		time.sleep(15)
 		evertestSendTest(hostname, testID)
 
@@ -279,15 +311,18 @@ def evertestMain(testname, filename):
 		#Important data
 
 		#Analyse and echo out
-		print "ID of running testcase: " + testname
+		print "ID of running testcase: {}".format(testname)
 		numberofvm = str(evertestGetNumber(testname))
-		print "Number of VM created in this testcase: " + numberofvm
+		print "Number of VM created in this testcase: {}".format(numberofvm)
 
 		#Parse testID and all hostnames to ip-API to create initXML 
 		evertestSetupTestNetwork(testname)
 
-		path = evertestTestPath + testname + "/" + testname + ".conf"
-		root = xmltree.parse(path).getroot()
+		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
+		if os.path.exists(path):
+			root = xmltree.parse(path).getroot()
+		else:
+			sys.exit("{} does not exist!".format(path))
 
 		#Register VMs to network xml
 		for child in root:
@@ -296,9 +331,12 @@ def evertestMain(testname, filename):
 				evertestRegisterVm(testname, hostname)
 
 		netPath = evertestGetNetconfPath(testname)
-		netCreate = "virsh net-create " + netPath #this creates the before defined network in libvirt
-		s = sub.Popen(netCreate, shell=True, stdout=sub.PIPE)
-		s.wait()
+		if os.path.exists(netPath):
+			netCreate = "virsh net-create {}".format(netPath) #this creates the before defined network in libvirt
+			s = sub.Popen(netCreate, shell=True, stdout=sub.PIPE)
+			s.wait()
+		else:
+			sys.exit("{} does not exist!".format(netPath))
 
 		print boarder
 
@@ -313,9 +351,6 @@ def evertestMain(testname, filename):
 
 				evertestConstructVM(templateID, hostname, testname, testfile)
 
-###				constructor = Thread(target=evertestConstructVM, args=(templateID, hostname, testname, testfile)) #threading speeds the testing a lot up
-###				constructor.start()
-###				constructor.join()
 		print "Joined monitoring thread"
 		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal 
 
@@ -337,19 +372,19 @@ def evertestMain(testname, filename):
 				grepF = sub.Popen(grep, shell=True, stdout=sub.PIPE)
 				out, err = grepF.communicate()
 
-			undefine = "virsh undefine " + str(vm[0]) + " --storage " + evertestImgPath + str(vm[0]) + ".img"
+			undefine = "virsh undefine {0} --storage {1}{0}.img".format(str(vm[0]), evertestImgPath)
 			pUndefine = sub.Popen(undefine, shell=True, stdout=sub.PIPE, stderr=sub.PIPE) #No errors and outs piped?
 			pUndefine.wait()
 
-			print "Undefined and removed VM: " + str(vm[0]) + " alias " + str(vm[1])
+			print "Undefined and removed VM: {} alias {}".format(str(vm[0]), str(vm[1]))
 
 
 		stopNet = "virsh net-destroy " + testname
 		pStopNet = sub.Popen(stopNet, shell=True, stdout=sub.PIPE)
 		pStopNet.wait()
 
-		netcfg = evertestNetPath + "netconf_" + testname + ".xml"
-		portmap = evertestNetPath + "portmap_" + testname + ".xml"
+		netcfg = "{}netconf_{}.xml".format(evertestNetPath, testname)
+		portmap = "{}portmap_{}.xml".format(evertestNetPath, testname)
 		folder = evertestTestPath + testname
 		os.remove(netcfg)
 		os.remove(portmap)
@@ -370,15 +405,15 @@ def evertestMain(testname, filename):
 #--------------------------------------------------------------------------------------
 def runTest(testname):
 	try:
-		evertestExtractTest(testname)
-		filename = evertestTestPath + testname + "/" + testname + ".conf"
+		evertestExtractTest(testname) #Check if extract result 0
+		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
 		evertestMain(testname, filename)
 
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in run: \n" + str(e)
 		stat = 1
-#--------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------
 # EOF run
 #--------------------------------------------------------------------------------------
 
@@ -386,17 +421,14 @@ def runTest(testname):
 givenTest = handleShellParam("n", 0)
 helpParam0 = handleShellParam("help", 0)
 helpParam1 = handleShellParam("h", 0)
-stat = 1 #init test with error 1
 
 if givenTest != 0:
 	stat = 0
-	#givenTest = "install_apache"
 	runTest(givenTest)
-	###time.sleep(10)
 	sys.exit(stat)
 
 if helpParam0 != 0 or helpParam1 != 0:
-	print "This help refers to spruce v" + spruceVersion + "."
+	print "This help refers to spruce v{}.".format(spruceVersion)
 	print "Parameters:"
 	print "    -n or --name   : Defines the used .py testfile"
 	print "    -h or --help   : Displays this help"
