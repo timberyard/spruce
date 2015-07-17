@@ -322,6 +322,6 @@ def resetNetwork(dev):
 		e = sys.exc_info()[edl]
 		print "Error in resetNetwork: \n" + str(e)
 
-initNetwork("eth0")
-setNetworkBandwidth("eth0", "8000kbit")
-setNetworkProperties("eth0", "delay 0ms", "loss 0%")
+#initNetwork("eth0")
+#setNetworkBandwidth("eth0", "8000kbit")
+#setNetworkProperties("eth0", "delay 0ms", "loss 0%")
