@@ -94,7 +94,7 @@ def writeAggregatedResults(testname, resfile):
 		for k, v in results.items():
 			errors = errors + len(v.errors)
 
-		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : testname, "running time" : "", "warnings" : warnings, "errors" : errors}}}
+		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : testname, "warnings" : warnings, "errors" : errors}}}
 		with open(resfile, 'w') as outfile:
 			json.dump(dic, outfile, indent=3, sort_keys=True)
 		print boarder
@@ -151,13 +151,13 @@ def evertestReceiveStatus(givenTest):
 
 				if "warning" in status.lower():
 					tData.appendWarning(sMessage)
-				if "error" in status.lower():
+				elif "error" in status.lower():
 					tData.appendError(sMessage)
-				if "info" in status.lower():
+				elif "info" in status.lower():
 					tData.appendInfo(sMessage)
-				if "time" in status.lower():
-					tData.duration = sMessage
-				if "finish" in status.lower():
+				elif "time" in status.lower():
+					tData.duration = "{} sec".format(sMessage)
+				elif "finish" in status.lower():
 					tData.finished = True
 					if all(result.finished == True for key, result in results.items()):
 						for k, v in results.items():

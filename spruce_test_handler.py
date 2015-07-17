@@ -428,5 +428,4 @@ if helpParam0 != 0 or helpParam1 != 0:
 	print "    -n or --name   : Defines the used .py testfile"
 	print "    -h or --help   : Displays this help"
 else:
-	print "No parameters given. Maybe you should have a look for the --help"
-	sys.exit(1)
+	sys.exit("No parameters given. Maybe you should have a look for the --help")
