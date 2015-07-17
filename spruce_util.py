@@ -291,3 +291,37 @@ def evertestSendStatus(status):
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
+
+def initNetwork(dev):
+	try:
+		evertestRunBash("sudo tc qdisc del dev {} root".format(dev))
+		evertestRunBash("sudo tc qdisc add dev {} parent root handle 1:0 htb default 1".format(dev))
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in initNetwork: \n" + str(e)
+
+def setNetworkBandwidth(dev, bandwidth):
+	try:
+		evertestRunBash("sudo tc class add dev {0} parent 1:0 classid 1:1 htb rate {1} ceil {1}".format(dev, bandwidth)) #ceil defines the maximum bandwidth rate including borrowing rate from other classes
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in setNetworkBandwidth: \n" + str(e)
+
+def setNetworkProperties(dev, *arg):
+	try:
+		args = " ".join(arg)
+		evertestRunBash("sudo tc qdisc add dev {} parent 1:1 handle 2:0 netem {}".format(dev, args))	#Delay has to be "Xms", if it shall be a +/- value, write "Xms Yms" where Xms is the variation
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in setNetworkProperties: \n" + str(e)
+
+def resetNetwork(dev):
+	try:
+		evertestRunBash("sudo tc qdisc del dev {} root".format(dev))
+	except:
+		e = sys.exc_info()[edl]
+		print "Error in resetNetwork: \n" + str(e)
+
+initNetwork("eth0")
+setNetworkBandwidth("eth0", "8000kbit")
+setNetworkProperties("eth0", "delay 0ms", "loss 0%")
