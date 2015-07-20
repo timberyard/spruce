@@ -27,8 +27,8 @@ logger.addHandler(handler)
 workingDir = "/mnt/"
 filesPath  = "/mnt/files"
 
-while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
-	time.sleep(1)
+#while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
+#	time.sleep(1)
 
 from spruce_util import *
 
@@ -46,7 +46,7 @@ def evertestExtractTest(dottest, testname):
 		logger.error("Tarfile not found, aborting!")
 		evertestSendStatus("[error] - Tarfile not found, aborting!")
 		evertestSendStatus("[finish]")
-		sys.exit("Tarfile not found, aborting!")
+		sys.exit()
 	except:
 		e = sys.exc_info()[1]
 		logger.error("Error in evertestExtractTest: \n %s", str(e))
@@ -70,7 +70,7 @@ else:
 	logger.error("Script file cannot be found!")
 	evertestSendStatus("[error] - Script file not found, aborting!")
 	evertestSendStatus("[finish]")
-	sys.exit("Script file not found, aborting!")
+	sys.exit()
 
 #Config File
 config = "/mnt/{0}/{0}.conf".format(testname)
@@ -80,7 +80,7 @@ else:
 	logger.error("Config file cannot be found!")
 	evertestSendStatus("[error] - Config file not found, aborting!")
 	evertestSendStatus("[finish]")
-	sys.exit("Config file not found, aborting!")
+	sys.exit()
 
 #Other files
 srcFilesDir = "/mnt/{}/files/".format(testname)
@@ -94,6 +94,8 @@ runs = "python -B " + scriptFile
 try:
 	run = sub.Popen(runs, shell=True, stdout=sub.PIPE)
 except:
-	logger.error("Error on executing '%s'!", runs)
-run.wait()
+	logger.error("Error on executing '{}'!".format(runs))
+	evertestSendStatus("[error] - Error on executing '{}'!".format(runs))
+	evertestSendStatus("[finish]")
+#run.wait()
 
