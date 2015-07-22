@@ -39,10 +39,8 @@ import subprocess as sub
 from threading import Thread
 
 #Tools
-#import re
 import shutil
 import time
-# import libvirt -> actually unused
 import tarfile
 from lxml import etree as xmltree
 
