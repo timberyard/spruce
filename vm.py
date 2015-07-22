@@ -56,7 +56,7 @@ try:
 	evertestExtractTest(dottest, testname)
 
 	#Script File
-	source = "/mnt/{}/scripts/{}.script".format(testname, hostname)
+	source = "/mnt/{}/scripts/{}.py".format(testname, hostname)
 	if (os.path.exists(source)):
 		shutil.copy(source, workingDir)
 	else:
@@ -79,7 +79,7 @@ try:
 	    shutil.copy2(f, filesPath)
 
 	#Execute script
-	scriptFile = "/mnt/" + hostname + ".script"
+	scriptFile = "/mnt/" + hostname + ".py"
 
 	runs = "python -B " + scriptFile
 	try:
