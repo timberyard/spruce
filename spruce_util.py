@@ -291,8 +291,11 @@ def evertestSendStatus(status):
 		s.close()
 		print "Got answer: " + str(data)
 	except:
-		e = sys.exc_info()[edl]
-		print "Error in evertestSendStatus: \n" + str(e)
+#		e = sys.exc_info()[edl]
+#		print "Error in evertestSendStatus: \n" + str(e)
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+   	 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+   		print(exc_type, fname, exc_tb.tb_lineno)
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestSendStatus
 #--------------------------------------------------------------------------------------------------------
@@ -480,3 +483,5 @@ def verbose_ping(dest_addr, timeout = 2, count = 20, psize = 64):
 # 	average_time += p
 # average_time = average_time / len(ping)
 # resetNetwork("eth0")
+#
+evertestSendStatus("bar")

@@ -66,7 +66,8 @@ class testData:
 		self.errors.append(["ERROR", errorMsg])
 
 	def appendInfo(self, infoMsg):
-		self.infos.append(["INFO", infoMsg])
+		self.infos.append(["INFO", infoMsg])# -> try now appending only message itself
+		#self.infos.append(infoMsg)
 
 	def writeResults(self):
 		if self.outfile != "":

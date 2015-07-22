@@ -16,6 +16,8 @@ logging.basicConfig(format='%(levelname)s : %(name)s : %(message)s', filename="v
 workingDir = "/mnt/"
 filesPath  = "/mnt/"
 
+HOST_IP = "192.168.0.226"
+
 while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
 	time.sleep(1)
 try:
@@ -84,7 +86,7 @@ try:
 	runs = "python -B " + scriptFile
 	try:
 		logging.info("Trying to execute test script")
-		run = sub.Popen(runs, shell=True) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix
+		run = sub.Popen(runs, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix
 		out = run.communicate()
 		logging.info(out[0])
 		if out[1]:
@@ -98,11 +100,15 @@ try:
 except:
 	e = sys.exc_info()[1]
 	logging.error("Reraised exception: {}".format(e))
+	#with open("vm.log") as l:
+	#	for line in l:
+	#		evertestSendStatus("[info] - " + line)
 
 finally:
-	with open("vm.log") as l:
-		for line in l:
-			evertestSendStatus("[info] - " + line)
+#	command = "scp /mnt/vm.log jan@{}:/home/jan/Schreibtisch/everbase/".format(HOST_IP)
+#	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#	process.communicate()
+	
 	evertestSendStatus("[finish]")
 	sys.exit()
 

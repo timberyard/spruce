@@ -43,7 +43,7 @@ import git
 #import re
 import shutil
 import time
-import libvirt
+# import libvirt -> actually unused
 import tarfile
 from lxml import etree as xmltree
 

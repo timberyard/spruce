@@ -139,7 +139,7 @@ def evertestGetVmMacAddr(testName, vmName):
 # Returns the dedicated Port Number of the VM
 # -------------------------------------------------------------------------------------------------------
 def evertestGetVmPort(testName, vmName, mode):
-
+	
 	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
 	if mode == "vm":
 		for node in root.iter():
