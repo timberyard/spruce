@@ -25,12 +25,17 @@ logger.addHandler(handler)
 ###############
 
 workingDir = "/mnt/"
-filesPath  = "/mnt/files"
+filesPath  = "/mnt/"
 
-#while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
-#	time.sleep(1)
+while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
+	time.sleep(1)
 
-from spruce_util import *
+try:
+	from spruce_util import *
+except:
+	e =sys.exc_info()[1]
+	logger.error("Cannot import spruce_util!")
+	sys.exit()
 
 def evertestExtractTest(dottest, testname):
 	try:
@@ -83,16 +88,21 @@ else:
 	sys.exit()
 
 #Other files
-srcFilesDir = "/mnt/{}/files/".format(testname)
-if os.path.exists(srcFilesDir):
-	shutil.copytree(srcFilesDir, filesPath, symlinks=False, ignore=None)
+fileList = os.listdir("/mnt/{}/files/".format(testname))
+fileList = ["/mnt/{}/files/".format(testname) + filename for filename in fileList]
+
+for f in fileList:
+    shutil.copy2(f, filesPath)
 
 #Execute script
 scriptFile = "/mnt/" + hostname + ".script"
 
 runs = "python -B " + scriptFile
 try:
-	run = sub.Popen(runs, shell=True, stdout=sub.PIPE)
+	logger.info("Trying to execute test script")
+	run = sub.Popen(runs, shell=True) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix
+	run.communicate()
+	#evertestSendStatus("[finish]")
 except:
 	logger.error("Error on executing '{}'!".format(runs))
 	evertestSendStatus("[error] - Error on executing '{}'!".format(runs))

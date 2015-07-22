@@ -341,7 +341,7 @@ def evertestMain(testname, filename):
 
 				evertestConstructVM(templateID, hostname, testname, testfile)
 
-		print "Joined monitoring thread"
+		# print "Joined monitoring thread"
 		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal 
 
 	except:

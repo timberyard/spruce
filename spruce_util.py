@@ -220,14 +220,15 @@ def evertestRecvFile(sock):
 #--------------------------------------------------------------------------------------------------------
 def evertestBreakSend(receiver, description):
 	try:
-		path = evertestGetLocalNetXml()
-		print "Debug (netXml path): " + path
-		root = xmltree.parse(path).getroot()
-		for child in root.iter():
-			if(child.tag == "host"):
-				if(child.get("name") == receiver):
-					receiverIp = child.get("ip")
+		#path = evertestGetLocalNetXml()
+		#print "Debug (netXml path): " + path
+		#root = xmltree.parse(path).getroot()
+		#for child in root.iter():
+		#	if(child.tag == "host"):
+		#		if(child.get("name") == receiver):
+		#			receiverIp = child.get("ip")
 
+		receiverIp = receiver
 		buffer_size = 2048
 		message = "Reached (" + description + ")."
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -254,6 +255,7 @@ def evertestBreakListen(rcvMessage):
 		message = "Got it."
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.bind(('', EVERTEST_TCP_FILE_PORT))
+		print "Now waiting for message"
 		s.listen(1)
 
 		conn, addr = s.accept()
@@ -324,7 +326,9 @@ def resetNetwork(dev):
 		e = sys.exc_info()[edl]
 		print "Error in resetNetwork: \n" + str(e)
 
-####################################################################################
+##############################################################################################################################
+# Base code source: https://bitbucket.org/delroth/python-ping/src/7084c31fa1603a1071c30525ae0431da42ce93cd/ping.py?at=default
+##############################################################################################################################
 
 ICMP_ECHO_REQUEST = 8 # Seems to be the same on Solaris.
 
@@ -358,13 +362,12 @@ def receive_one_ping(my_socket, id, timeout):
     """
     Receive the ping from the socket.
     """
-    time_left = timeout
     while True:
-        started_select = time.time()
-        what_ready = select.select([my_socket], [], [], time_left)
-        how_long_in_select = (time.time() - started_select)
-        if what_ready[0] == []: # Timeout
+        beginSelect = time.time()
+        waitForSocket = select.select([my_socket], [], [], timeout)
+        if waitForSocket[0] == []: # Timeout
             return
+        selectTime = (time.time() - beginSelect)
 
         time_received = time.time()
         received_packet, addr = my_socket.recvfrom(1024)
@@ -372,15 +375,15 @@ def receive_one_ping(my_socket, id, timeout):
         type, code, checksum, packet_id, sequence = struct.unpack(
             "bbHHh", icmpHeader
         )
+
+	timeout = timeout - selectTime
+        if timeout <= 0:
+            return
+
         if packet_id == id:
             bytes = struct.calcsize("d")
             time_sent = struct.unpack("d", received_packet[28:28 + bytes])[0]
             return time_received - time_sent
-
-        time_left = time_left - how_long_in_select
-        if time_left <= 0:
-            return
-
 
 def send_one_ping(my_socket, dest_addr, id, psize):
     """
@@ -431,8 +434,8 @@ def do_one(dest_addr, timeout, psize):
 
     my_id = os.getpid() & 0xFFFF
 
-    send_one_ping(my_socket, dest_addr, my_id, psize)
-    delay = receive_one_ping(my_socket, my_id, timeout)
+    send_one_ping(my_socket, dest_addr, my_id, psize) #	Send ping
+    delay = receive_one_ping(my_socket, my_id, timeout) # Wait for response to sent ping
 
     my_socket.close()
     return delay
@@ -466,3 +469,14 @@ def verbose_ping(dest_addr, timeout = 2, count = 20, psize = 64):
 	return allPing, loss, endTime
 	print
 	
+# initNetwork("eth0")
+# setNetworkBandwidth("eth0", "100mbit")
+# setNetworkProperties("eth0", "delay 0ms", "loss 0%")
+# count = 50
+# ping, loss, pingTime = verbose_ping("google.de", timeout = 0.1, count = count)
+		
+# average_time = 0
+# for p in ping:
+# 	average_time += p
+# average_time = average_time / len(ping)
+# resetNetwork("eth0")
