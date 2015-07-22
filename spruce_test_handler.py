@@ -37,7 +37,6 @@ import os
 import fileinput
 import subprocess as sub
 from threading import Thread
-import git
 
 #Tools
 #import re
