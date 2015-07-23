@@ -38,7 +38,7 @@ dummytest.tar
   |   |-- somedependecy.py
   |   |-- ...
 ```  
-Let's start with the dummytest.conf, it's a simple xml-file, .conf is just for easier handling:
+Let's start with the ***dummytest*.conf**, it's a simple xml-file, .conf is just for easier handling:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -49,6 +49,8 @@ Let's start with the dummytest.conf, it's a simple xml-file, .conf is just for e
 </rootElement>
 ```
 The template attribute names the vm that is being cloned to run the test on it, vmcount tells the test handler how many vms he is handling.
+
+The **vm*.py** files are the scripts being executed by the vms as specified in the config. The can contain everything from `print "foo"` through to complex algorithms etc.
 
 ###Start a testcase
 **Just this one command line:** ```sudo python spruce_test_handler.py -n=testname``` where you have to replace *testname* with the tests plain name / the name of the testfile without fileending.
