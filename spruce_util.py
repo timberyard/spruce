@@ -5,13 +5,17 @@
 
 ##!!!Don't actually use the SendFile functions!!!
 
+from subprocess import check_output
 import sendfile
 import subprocess
+import traceback
 import socket
 import struct
 import select
 import errno
 import time
+import sys
+import os
 from lxml import etree as xmltree
 
 from glob			 import *
@@ -62,9 +66,16 @@ def evertestRunBash(command):
 # -------------------------------------------------------------------------------------------------------
 def evertestGetLocalName():
 
-	script = glob(EVERTEST_WORKER_ROOT_DIR + "/*.script")[0]
-	replaceString = EVERTEST_WORKER_ROOT_DIR + "/"
-	return script.replace(replaceString, "").replace(".script", "")
+	# script = glob(EVERTEST_WORKER_ROOT_DIR + "/*.script")[0]
+	# script = (EVERTEST_WORKER_ROOT_DIR + "/*.script")
+	# replaceString = EVERTEST_WORKER_ROOT_DIR + "/"
+
+	getHostname = "hostname" # WORKAROUND / FIX : Local name is the vm's hostname.. looking .script is not working anymore because every testfile is now a normal .py file
+	hostname = check_output(getHostname)
+	hostname = hostname.replace('\n', '')
+
+	return hostname
+#	return script.replace(replaceString, "").replace(".script", "")
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetLocalName
 # -------------------------------------------------------------------------------------------------------
@@ -77,6 +88,7 @@ def evertestGetLocalTestId():
 
 	conf = glob(EVERTEST_WORKER_ROOT_DIR + "/*.conf")[0]
 	replaceString = EVERTEST_WORKER_ROOT_DIR + "/"
+
 	return conf.replace(replaceString, "").replace(".conf", "")
 # -------------------------------------------------------------------------------------------------------
 # EOF evertestGetLocalName
@@ -280,17 +292,18 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 def evertestSendStatus(status):
 	try:
-		EVERTEST_MONITOR_PORT = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
-		print "Monitor Port: " + str(EVERTEST_MONITOR_PORT)
+		monitor_port = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
+		print "Monitor Port: " + str(monitor_port)
 		receiverIp = HOST_IP
 		buffer_size = 1024
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.connect((receiverIp, EVERTEST_MONITOR_PORT))
+		s.connect((receiverIp, monitor_port))
 		s.send(status)
 		data = s.recv(buffer_size)
 		s.close()
 		print "Got answer: " + str(data)
 	except:
+		print(traceback.format_exc())
 #		e = sys.exc_info()[edl]
 #		print "Error in evertestSendStatus: \n" + str(e)
 		exc_type, exc_obj, exc_tb = sys.exc_info()
