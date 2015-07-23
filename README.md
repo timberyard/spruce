@@ -24,6 +24,32 @@ Thist are the main script used as testing framework:
 
 **Test scripts:** ```git clone https://github.com/timberyard/spruce``` -> *I recommend to clone to /var/spruce/*
 
+###Make a test package
+A test package consists of a simple .tar file. It's packed as following:
+
+```  
+dummytest.tar
+  |-- dummytest.conf
+  |-- scripts
+  |   |-- vm1.py
+  |   |-- vm2.py
+  |
+  |-- files
+  |   |-- somedependecy.py
+  |   |-- ...
+```  
+Let's start with the dummytest.conf, it's a simple xml-file, .conf is just for easier handling:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<rootElement>
+	<info vmcount='2'/>
+	<vm name="vm1" template="client_15.04" script="vm1.py"/>
+	<vm name="vm2" template="server_15.04" script="vm1.py"/>
+</rootElement>
+```
+The template attribute names the vm that is being cloned to run the test on it, vmcount tells the test handler how many vms he is handling.
+
 ###Start a testcase
 **Just this one command line:** ```sudo python spruce_test_handler.py -n=testname``` where you have to replace *testname* with the tests plain name / the name of the testfile without fileending.
 
