@@ -18,5 +18,14 @@ Thist are the main script used as testing framework:
 
 ##How to set it up
 ###Dependencies (for a Ubuntu 15.04 host)
-**Python**: python2.7, python-lxml, python-sendfile
+**Python:** ```sudo apt-get install python2.7, python-lxml, python-sendfile```
+
+**Virtualization:** ```sudo apt-get install libvirt-bin virt-manager libguestfs-dev libguestfs-tools```
+
+**Test scripts:** ```git clone https://github.com/timberyard/spruce``` -> *I recommend to clone to /var/spruce/*
+
+###Start a testcase
+**Just this one command line:** ```sudo python spruce_test_handler.py -n=testname``` where you have to replace *testname* with the tests plain name / the name of the testfile without fileending.
+
+
 
