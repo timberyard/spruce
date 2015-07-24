@@ -46,6 +46,7 @@ def evertestGetName(xmlPath, ip):
 
 results = {}
 dics = {}
+jresults = []
 
 class testData:
 	
@@ -84,6 +85,38 @@ class testData:
 		else:
 			print "No outfile specified! Writing aborted."
 
+	def writeJenkins(self, testname):
+		if self.outfile != "":
+			if len(self.errors) != 0:
+				self.status = "Failed"
+			elif len(self.warnings) != 0:
+				self.status = "Success with warnings"
+			else:
+				self.status = "Success"
+
+			result = xmltree.Element("testcase", name=self.vmname, status=self.status, time=str(self.duration), classname=testname)
+			jresults.append(result)
+			return result
+
+def writeJenskinsResults(testname, resfile):
+	if resfile != "":
+		failures = 0 #init
+		errors = 0 #init
+
+		# for jresult in jresults:
+		# 	if (jresult.get("status") != "Failed"):
+		# 		errors += 1
+		
+		uRoot = xmltree.Element("testsuites", tests=str(len(jresults)), failures="0", disabled="0", errors="0", timestamp="0", time="0", name="AllTests") #just placeholder, will be prettied up later
+		
+		root = xmltree.Element("testsuite", name=testname, tests=str(len(jresults)), failures="0", disabled="0", errors="0", time="0")
+		for jresult in jresults:
+			root.append(jresult)
+		uRoot.append(root)
+
+		xmltree.dump(uRoot)
+		tree = xmltree.ElementTree(uRoot)
+		tree.write(resfile, pretty_print=True, encoding="utf-8", xml_declaration=1)
 
 def writeAggregatedResults(testname, resfile):
 	if resfile != "":
@@ -113,7 +146,7 @@ def evertestReceiveStatus(givenTest):
 		xmlPath = "{}netconf_{}.xml".format(evertestNetPath, givenTest)
 		confXmlPath = "{0}{1}/{1}.conf".format(evertestTestPath, givenTest)
 
-		#create testData objects for all VMs in the test
+		# Append one testData() object per VM to the results dictionary
 		root = xmltree.parse(confXmlPath).getroot()
 		for child in root:
 			if (child.tag == "vm"):
