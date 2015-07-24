@@ -41,7 +41,7 @@ edl = EVERTEST_DEBUG_LEVEL
 # -------------------------------------------------------------------------------------------------------
 # Executes a Bash Command.
 # -------------------------------------------------------------------------------------------------------
-def evertestRunBash(command):
+def runBash(command):
 	try:
 		# Start Subprocess
 		process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -57,14 +57,14 @@ def evertestRunBash(command):
 	except:
 		return 1
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestRunBash
+# EOF runBash
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the Name of the virtual Machine that the Script is running on.
 # -------------------------------------------------------------------------------------------------------
-def evertestGetLocalName():
+def getHostname():
 
 	# script = glob(EVERTEST_WORKER_ROOT_DIR + "/*.script")[0]
 	# script = (EVERTEST_WORKER_ROOT_DIR + "/*.script")
@@ -77,36 +77,36 @@ def evertestGetLocalName():
 	return hostname
 #	return script.replace(replaceString, "").replace(".script", "")
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetLocalName
+# EOF getHostname
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the Name of the Test (Network) that the Script is currently running as a Part of.
 # -------------------------------------------------------------------------------------------------------
-def evertestGetLocalTestId():
+def getLocalTestId():
 
 	conf = glob(EVERTEST_WORKER_ROOT_DIR + "/*.conf")[0]
 	replaceString = EVERTEST_WORKER_ROOT_DIR + "/"
 
 	return conf.replace(replaceString, "").replace(".conf", "")
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetLocalName
+# EOF getHostname
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the actual tests network XML
 # -------------------------------------------------------------------------------------------------------
-def evertestGetLocalNetXml():
+def getLocalNetXml():
 	try:
 		conf = glob(EVERTEST_WORKER_ROOT_DIR + "/*.net")[0]
 		return conf
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in evertestBreakSend: \n" + str(e)
+		print "Error in breakSend: \n" + str(e)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetLocalNetXml
+# EOF getLocalNetXml
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -114,9 +114,9 @@ def evertestGetLocalNetXml():
 # Creates and opens a TCP Socket that is either setup to listen to a specified port or to send Data
 # to it. Returns the created Socket Object on Success.
 # -------------------------------------------------------------------------------------------------------
-def evertestOpenSocket(tid, vm, port, mode):
+def openSocket(tid, vm, port, mode):
 
-	addr = evertestGetVmIpAddr(tid, vm)
+	addr = getVmIpAddr(tid, vm)
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	# Print Success once socket was opened
@@ -143,11 +143,11 @@ def evertestOpenSocket(tid, vm, port, mode):
 
 	return sock
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestOpenSocket
+# EOF openSocket
 # -------------------------------------------------------------------------------------------------------
 
 
-def evertestCloseSocket(socket):
+def closeSocket(socket):
 
 	socket.shutdown()
 	socket.close()
@@ -156,14 +156,14 @@ def evertestCloseSocket(socket):
 # -------------------------------------------------------------------------------------------------------
 # Sends a File via TCP to the specified virtual Machine
 # -------------------------------------------------------------------------------------------------------
-def evertestSendFile(sock, filename, tid, receiver):
+def sendFile(sock, filename, tid, receiver):
 
 	path = EVERTEST_WORKER_ROOT_DIR + "/" + filename
 	
 	if receiver == "localhost":
 		addr = "127.0.0.1"
 	else:
-		addr = evertestGetVmIpAddr(tid, receiver)
+		addr = getVmIpAddr(tid, receiver)
 	
 	datasz = os.path.getsize(path)
 	data = open(path, "rb")
@@ -181,19 +181,19 @@ def evertestSendFile(sock, filename, tid, receiver):
 	        break 
 	    position += sent
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestSendFile
+# EOF sendFile
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Listens on TCP Port until File was received
 # -------------------------------------------------------------------------------------------------------
-def evertestRecvFile(sock):
+def receiveFile(sock):
 
-	name 		= evertestGetLocalName()
-	test 		= evertestGetLocalTestId()
-	addr 		= evertestGetVmIpAddr(test, name)
-	senderaddr  = evertestGetVmIpAddr(test, "sender")
+	name 		= getHostname()
+	test 		= getLocalTestId()
+	addr 		= getVmIpAddr(test, name)
+	senderaddr  = getVmIpAddr(test, "sender")
 	chunks 		= []
 	recvd  		= 0
 	chunk  		= "-"
@@ -221,18 +221,18 @@ def evertestRecvFile(sock):
 		recvd += len(chunk)
 	return "".join(chunks)
 
-	evertestCloseSocket(sock)
+	closeSocket(sock)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestSendFile
+# EOF sendFile
 # -------------------------------------------------------------------------------------------------------
 
 
 #--------------------------------------------------------------------------------------------------------
 # 
 #--------------------------------------------------------------------------------------------------------
-def evertestBreakSend(receiver, description):
+def breakSend(receiver, description):
 	try:
-		#path = evertestGetLocalNetXml()
+		#path = getLocalNetXml()
 		#print "Debug (netXml path): " + path
 		#root = xmltree.parse(path).getroot()
 		#for child in root.iter():
@@ -251,16 +251,16 @@ def evertestBreakSend(receiver, description):
 		print "Reached breakpoint (" + description + "), sent command to go on, recieved {'" + data + "'} as answer."
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in evertestBreakSend: \n" + str(e)
+		print "Error in breakSend: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
-# EOF evertestBreakSend
+# EOF breakSend
 #--------------------------------------------------------------------------------------------------------
 
 
 #--------------------------------------------------------------------------------------------------------
 #
 #--------------------------------------------------------------------------------------------------------
-def evertestBreakListen(rcvMessage):
+def breakListen(rcvMessage):
 	try:
 		myIp = "127.0.0.1"
 		buffer_size = 2048
@@ -281,7 +281,7 @@ def evertestBreakListen(rcvMessage):
 		conn.close()
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in evertestBreakListen: \n" + str(e)
+		print "Error in breakListen: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
@@ -290,9 +290,9 @@ def evertestBreakListen(rcvMessage):
 #--------------------------------------------------------------------------------------------------------
 # 
 #--------------------------------------------------------------------------------------------------------
-def evertestSendStatus(status):
+def sendStatus(status):
 	try:
-		monitor_port = evertestGetVmPort(evertestGetLocalTestId(), evertestGetLocalName(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
+		monitor_port = getVmMonitoringPort(getLocalTestId(), getHostname(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
 		print "Monitor Port: " + str(monitor_port)
 		receiverIp = HOST_IP
 		buffer_size = 1024
@@ -305,24 +305,24 @@ def evertestSendStatus(status):
 	except:
 		print(traceback.format_exc())
 #		e = sys.exc_info()[edl]
-#		print "Error in evertestSendStatus: \n" + str(e)
+#		print "Error in sendStatus: \n" + str(e)
 		exc_type, exc_obj, exc_tb = sys.exc_info()
    	 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
    		print(exc_type, fname, exc_tb.tb_lineno)
 #--------------------------------------------------------------------------------------------------------
-# EOF evertestSendStatus
+# EOF sendStatus
 #--------------------------------------------------------------------------------------------------------
 
 def initNetwork(dev):
 	try:
-		evertestRunBash("sudo tc qdisc add dev {} parent root handle 1:0 htb default 1".format(dev))
+		runBash("sudo tc qdisc add dev {} parent root handle 1:0 htb default 1".format(dev))
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in initNetwork: \n" + str(e)
 
 def setNetworkBandwidth(dev, bandwidth):
 	try:
-		evertestRunBash("sudo tc class add dev {0} parent 1:0 classid 1:1 htb rate {1} ceil {1}".format(dev, bandwidth)) #ceil defines the maximum bandwidth rate including borrowing rate from other classes
+		runBash("sudo tc class add dev {0} parent 1:0 classid 1:1 htb rate {1} ceil {1}".format(dev, bandwidth)) #ceil defines the maximum bandwidth rate including borrowing rate from other classes
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in setNetworkBandwidth: \n" + str(e)
@@ -330,14 +330,14 @@ def setNetworkBandwidth(dev, bandwidth):
 def setNetworkProperties(dev, *arg):
 	try:
 		args = " ".join(arg)
-		evertestRunBash("sudo tc qdisc add dev {} parent 1:1 handle 2:0 netem {}".format(dev, args))	#Delay has to be "Xms", if it shall be a +/- value, write "Xms Yms" where Xms is the variation
+		runBash("sudo tc qdisc add dev {} parent 1:1 handle 2:0 netem {}".format(dev, args))	#Delay has to be "Xms", if it shall be a +/- value, write "Xms Yms" where Xms is the variation
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in setNetworkProperties: \n" + str(e)
 
 def resetNetwork(dev):
 	try:
-		evertestRunBash("sudo tc qdisc del dev {} root".format(dev))
+		runBash("sudo tc qdisc del dev {} root".format(dev))
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in resetNetwork: \n" + str(e)
@@ -497,4 +497,4 @@ def verbose_ping(dest_addr, timeout = 2, count = 20, psize = 64):
 # average_time = average_time / len(ping)
 # resetNetwork("eth0")
 #
-evertestSendStatus("bar")
+sendStatus("bar")

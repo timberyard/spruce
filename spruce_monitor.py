@@ -19,19 +19,19 @@ from spruce_netcfg_host import *
 hostIP = "192.168.0.226"
 
 #Paths
-evertestNetPath     = "/var/evertest/net/"
-evertestTestPath	= "/var/evertest/tests/"
+netPath     = "/var/evertest/net/"
+testPath	= "/var/evertest/tests/"
 boarder 			= "~~~~~~~~~~"
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
 #--------------------------------------------------------------------------------------
-EVERTEST_DEBUG_LEVEL = 1
-edl = EVERTEST_DEBUG_LEVEL
+DEBUG_LEVEL = 1
+dl = DEBUG_LEVEL
 #--------------------------------------------------------------------------------------
 # EOF Debug-Settings
 #--------------------------------------------------------------------------------------
 
-def evertestGetName(xmlPath, ip):
+def readVmName(xmlPath, ip):
 	try:
 		root = xmltree.parse(xmlPath).getroot()
 		for child in root.iter():
@@ -40,8 +40,8 @@ def evertestGetName(xmlPath, ip):
 					name = child.get("name")
 					return name
 	except:
-		e = sys.exc_info()[edl]
-		print "Error in evertestGetName: \n" + str(e)
+		e = sys.exc_info()[dl]
+		print "Error in readVmName: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 
 results = {}
@@ -139,12 +139,12 @@ def writeAggregatedResults(testname, resfile):
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def evertestReceiveStatus(givenTest):
+def collectMessages(givenTest):
 	try:
 		mode = "test"
-		port = evertestGetVmPort(givenTest, "foo", mode)
-		xmlPath = "{}netconf_{}.xml".format(evertestNetPath, givenTest)
-		confXmlPath = "{0}{1}/{1}.conf".format(evertestTestPath, givenTest)
+		port = getVmMonitoringPort(givenTest, "foo", mode)
+		xmlPath = "{}netconf_{}.xml".format(netPath, givenTest)
+		confXmlPath = "{0}{1}/{1}.conf".format(testPath, givenTest)
 
 		# Append one testData() object per VM to the results dictionary
 		root = xmltree.parse(confXmlPath).getroot()
@@ -165,7 +165,7 @@ def evertestReceiveStatus(givenTest):
 			finished = 0
 			while (finished == 0):
 				conn, addr = s.accept()
-				hostname = str(evertestGetName(xmlPath, addr[0]))
+				hostname = str(readVmName(xmlPath, addr[0]))
 
 				print boarder
 				print "Received status from {0} [{1}] {{\"{2}\"}}".format(str(addr), hostname, time.strftime("%H:%M:%S"))
@@ -207,8 +207,8 @@ def evertestReceiveStatus(givenTest):
 
 		writeAggregatedResults(givenTest, "aggResults.json")
 	except:
-		e = sys.exc_info()[edl]
-		print "Error in evertestReceiveStatus: \n" + str(e)
+		e = sys.exc_info()[dl]
+		print "Error in collectMessages: \n" + str(e)
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------

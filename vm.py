@@ -28,7 +28,7 @@ try:
 		logging.error("Cannot import spruce_util!")
 		raise
 
-	def evertestExtractTest(dottest, testname):
+	def extractTest(dottest, testname):
 		try:
 			extractString = "/mnt/" + dottest
 			extractPath = "/mnt/" + testname + "/"
@@ -43,7 +43,7 @@ try:
 			raise
 		except:
 			e = sys.exc_info()[1]
-			logging.error("Error in evertestExtractTest: \n %s", str(e))
+			logging.error("Error in extractTest: \n %s", str(e))
 			raise
 
 	getHostname = "hostname"
@@ -55,7 +55,7 @@ try:
 	testname = check_output(["ls -LR /mnt/ | grep *.tar* | cut -d'.' -f 1"], shell=True)
 	testname = testname.replace('\n', '')
 
-	evertestExtractTest(dottest, testname)
+	extractTest(dottest, testname)
 
 	#Script File
 	source = "/mnt/{}/scripts/{}.py".format(testname, hostname)
@@ -86,13 +86,14 @@ try:
 	runs = "python -B " + scriptFile
 	try:
 		logging.info("Trying to execute test script")
-		run = sub.Popen(runs, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix
+		# run = sub.Popen(runs, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix #new Bug: piping leads to stdin: no tty Error.. suddenly.
+		run = sub.Popen(runs, shell=True)
 		out = run.communicate()
 		logging.info(out[0])
 		if out[1]:
 			logging.error(out[1])
 		logging.info("initialized server")
-		#evertestSendStatus("[finish]")
+		#sendStatus("[finish]")
 	except:
 		logging.error("Error on executing '{}'!".format(runs))
 		raise
@@ -102,13 +103,13 @@ except:
 	logging.error("Reraised exception: {}".format(e))
 	#with open("vm.log") as l:
 	#	for line in l:
-	#		evertestSendStatus("[info] - " + line)
+	#		sendStatus("[info] - " + line)
 
 finally:
 #	command = "scp /mnt/vm.log jan@{}:/home/jan/Schreibtisch/everbase/".format(HOST_IP)
 #	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 #	process.communicate()
 	
-	evertestSendStatus("[finish]")
+	sendStatus("[finish]")
 	sys.exit()
 

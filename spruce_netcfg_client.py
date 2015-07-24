@@ -40,12 +40,12 @@ NEWLN = "\n"
 # -------------------------------------------------------------------------------------------------------
 # Returns the local Network Folder
 # -------------------------------------------------------------------------------------------------------
-def evertestNetworkDir():
+def networkDir():
 
 	# Return the Path of the Configuration File residing on the Worker
 	return EVERTEST_ROOT_PATH
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestNetworkDir
+# EOF networkDir
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -56,12 +56,12 @@ def evertestNetworkDir():
 #	str testName
 #		- The Name of the Test
 # -------------------------------------------------------------------------------------------------------
-def evertestGetNetconfPath(testName):
+def getNetconfPath(testName):
 
 	# Return the Path of the Configuration File residing on the Worker
 	return EVERTEST_ROOT_PATH + "/" + testName + ".net"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetNetconfPath
+# EOF getNetconfPath
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -72,21 +72,21 @@ def evertestGetNetconfPath(testName):
 #	str testName
 #		- The Name of the Test
 # -------------------------------------------------------------------------------------------------------
-def evertestGetPortmapPath(testName):
+def getPortmapPath(testName):
 
 	# Return the Path of the Portmap File residing on the Worker
 	return EVERTEST_ROOT_PATH + "/" + testName + ".ports"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetNetconfPath
+# EOF getNetconfPath
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the Subnet corresponding to the specified Test Name
 # -------------------------------------------------------------------------------------------------------
-def evertestGetTestSubnet(testName):
+def getTestSubnet(testName):
 
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	for child in root:
 		if(child.tag == "ip"):
 			# Remove preceding '192.168.' and following '.1' of IP to obtain Subnet ID
@@ -95,16 +95,16 @@ def evertestGetTestSubnet(testName):
 	print("Error: Failed to find Test with TID '" & testName & "'")
 	return -1 # Failed to find Test.
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetTestSubnet
+# EOF getTestSubnet
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the IP Address of an existing VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmIpAddr(testName, vmName):
+def getVmIpAddr(testName, vmName):
 	
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	for node in root.iter():
 		if(node.tag == "host"):
 			if(node.get("name") == vmName):
@@ -113,16 +113,16 @@ def evertestGetVmIpAddr(testName, vmName):
 	print "Could not find IP Address Entry for VM: { Name = " + vmName + " }"
 	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetVmIpAddr
+# EOF getVmIpAddr
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the MAC Address of an existing VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmMacAddr(testName, vmName):
+def getVmMacAddr(testName, vmName):
 	
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	for node in root.iter():
 		if(node.tag == "host"):
 			if(node.get("name") == vmName):
@@ -131,16 +131,16 @@ def evertestGetVmMacAddr(testName, vmName):
 	print "Could not find Mac Address Entry for VM: { Name = " + vmName + " }"
 	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetVmMacAddr
+# EOF getVmMacAddr
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the dedicated Port Number of the VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmPort(testName, vmName, mode):
+def getVmMonitoringPort(testName, vmName, mode):
 	
-	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
+	root = xmltree.parse(getPortmapPath(testName)).getroot()
 	if mode == "vm":
 		for node in root.iter():
 			if(node.tag == "entry"):
@@ -160,5 +160,5 @@ def evertestGetVmPort(testName, vmName, mode):
 #	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
 #	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetVmMacAddr
+# EOF getVmMacAddr
 # -------------------------------------------------------------------------------------------------------

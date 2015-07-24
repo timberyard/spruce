@@ -2,7 +2,7 @@
 # This Python module implements all functionality relevant to the configuration of libvirt VM networks 
 # (also referred to as Domains). It provides routines to assign static IP and MAC addresses to the
 # virtual machines and makes those retrievable by solely passing the VM's name string. When first setting
-# up an Evertest Testcase Network, an XML file will be created inside the evertestNetworkDir() directory, this
+# up an Evertest Testcase Network, an XML file will be created inside the networkDir() directory, this
 # File will be used by libvirt (virsh) to configure the domain correspoinding to each newly created VM.
 # In order to tell libvirt's DHCP server, which VM shall be addressable at which address, the user needs
 # to register as many VMs in the configuration file as he requires in order to perform his testcase.
@@ -115,12 +115,12 @@ def replaceAll(file, search, replace):
 # -------------------------------------------------------------------------------------------------------
 # Returns the local Network Folder
 # -------------------------------------------------------------------------------------------------------
-def evertestNetworkDir():
+def networkDir():
 
 	# Return the Path of the Configuration File residing on the Host
 	return EVERTEST_ROOT_PATH + "/net"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestNetworkDir
+# EOF networkDir
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -131,12 +131,12 @@ def evertestNetworkDir():
 #	str testName
 #		- The Name of the Test
 # -------------------------------------------------------------------------------------------------------
-def evertestGetNetconfPath(testName):
+def getNetconfPath(testName):
 
 	# Return the Path of the Configuration File residing on the Host
 	return "{}/net/netconf_{}.xml".format(EVERTEST_ROOT_PATH, testName)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetNetconfPath
+# EOF getNetconfPath
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -147,12 +147,12 @@ def evertestGetNetconfPath(testName):
 #	str testName
 #		- The Name of the Test
 # -------------------------------------------------------------------------------------------------------
-def evertestGetPortmapPath(testName):
+def getPortmapPath(testName):
 
 	# Return the Path of the Portmap File residing on the Host
 	return "{}/net/portmap_{}.xml".format(EVERTEST_ROOT_PATH, testName)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetNetconfPath
+# EOF getNetconfPath
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -168,9 +168,9 @@ def evertestGetPortmapPath(testName):
 #		  VM IP Address = 192.168.'subnet'.'vmid'
 #		  Also the Network Bridge will be called virbr-'subnet'
 # -------------------------------------------------------------------------------------------------------
-def evertestCreateNetconfXml(testName, subnet):
+def createNetconfXml(testName, subnet):
 
-	path = evertestGetNetconfPath(testName)
+	path = getNetconfPath(testName)
 
 	if(os.path.isfile(path)):
 		print "Network Configuration File for Test already exists! (TID = " + testName + ")" 
@@ -195,7 +195,7 @@ def evertestCreateNetconfXml(testName, subnet):
 			print "VM IP-Address Range: 192.168.%d.[2-254]" % (subnet)
 			print SEPLN + NEWLN
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestCreateNetconfXml
+# EOF createNetconfXml
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -207,12 +207,12 @@ def evertestCreateNetconfXml(testName, subnet):
 #	str testName
 #		- The Name of the Test, resulting XML File will be called portmap_'testName'.xml
 # -------------------------------------------------------------------------------------------------------
-def evertestCreatePortmapXml(testName):
+def createPortmapXml(testName):
 
-	path = evertestGetPortmapPath(testName)
-	subnet = evertestGetTestSubnet(testName)
-	minPort = evertestCalculateMinPort(testName)
-	maxPort = evertestCalculateMaxPort(testName)
+	path = getPortmapPath(testName)
+	subnet = getTestSubnet(testName)
+	minPort = calculateMinPort(testName)
+	maxPort = calculateMaxPort(testName)
 
 	if(os.path.isfile(path)):
 		print "Portmap File for Test Network already exists! (TID = " + testName + ")" 
@@ -229,16 +229,16 @@ def evertestCreatePortmapXml(testName):
 			print "VM Port Range: %d-%d [containing %d forbidden Port(s)]" % (minPort, maxPort, maxPort - minPort + 1 - 253)
 			print SEPLN + NEWLN
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestCreatePortmapXml
+# EOF createPortmapXml
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the Subnet corresponding to the specified Test Name
 # -------------------------------------------------------------------------------------------------------
-def evertestGetTestSubnet(testName):
+def getTestSubnet(testName):
 
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	for child in root:
 		if(child.tag == "ip"):
 			# Remove preceding '192.168.' and following '.1' of IP to obtain Subnet ID
@@ -247,7 +247,7 @@ def evertestGetTestSubnet(testName):
 	print("Error: Failed to find Test with TID '" & testName & "'")
 	return -1 # Failed to find Test.
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetTestSubnet
+# EOF getTestSubnet
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -261,35 +261,35 @@ def evertestGetTestSubnet(testName):
 #	str vmName
 #		- Name of the virtual Machine to register
 # -------------------------------------------------------------------------------------------------------
-def evertestRegisterVm(testName, vmName):
+def registerVm(testName, vmName):
 
 	# Number of the virtual Machine to register (IP will be 192.168.'subnet'.'vmNumber')
-	vmNumber    = evertestRequestVmNumber(testName)
-	subnet 	    = evertestGetTestSubnet(testName)
+	vmNumber    = requestVmNumber(testName)
+	subnet 	    = getTestSubnet(testName)
 	macAddrBase = "aa:bb:cc:dd"
 	vmIpAddr    = "192.168.%d.%d" % (subnet, vmNumber)
-	vmPort      = evertestRequestVmPort(testName)
+	vmPort      = requestVmPort(testName)
 
 	# Update netconf_ File
 	newEntry    = "<host mac=\"" + macAddrBase + ":" + format(subnet, "02x") + ":" 
 	newEntry   += format(vmNumber, "02x") + "\" "
 	newEntry   += "name=\"" + vmName + "\" ip=\"" + vmIpAddr + "\"/>"
 
-	replaceAll( evertestGetNetconfPath(testName), 
+	replaceAll( getNetconfPath(testName), 
 		    indent(2) + "</dhcp>", 
 		    indent(3) + newEntry + NEWLN + indent(2) + "</dhcp>" )
 	
 	# Update portmap_ File
 	newEntry   = "<entry name=\"" + vmName + "\" port=\"%d\"/>" % (vmPort)
 
-	replaceAll( evertestGetPortmapPath(testName),
+	replaceAll( getPortmapPath(testName),
 			"</portmap>",
 			indent(1) + newEntry + NEWLN + "</portmap>" )
 
 	if(not EVERTEST_SILENT):
-		print "Successfully registered VM for current Test (TID = " + testName + "): { Name = " + vmName + " | IP = " + evertestGetVmIpAddr(testName, vmName) + " | Port = %d }." % (vmPort)
+		print "Successfully registered VM for current Test (TID = " + testName + "): { Name = " + vmName + " | IP = " + getVmIpAddr(testName, vmName) + " | Port = %d }." % (vmPort)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestRegisterVm
+# EOF registerVm
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -302,24 +302,24 @@ def evertestRegisterVm(testName, vmName):
 #	str vmName
 #		- Name of the virtual Machine to register
 # -------------------------------------------------------------------------------------------------------
-def evertestUnregisterVm(testName, vmName):
+def unregisterVm(testName, vmName):
 
-	subnet 	  = evertestGetTestSubnet(testName)
-	vmMacAddr = evertestGetVmMacAddr(testName, vmName)
-	vmIpAddr  = evertestGetVmIpAddr(testName, vmName)
+	subnet 	  = getTestSubnet(testName)
+	vmMacAddr = getVmMacAddr(testName, vmName)
+	vmIpAddr  = getVmIpAddr(testName, vmName)
 
 	# Entry to search for in XML (that will be deleted)
 	delEntry  = "<host mac=\"" + vmMacAddr + "\" "
 	delEntry += "name=\"" + vmName + "\" ip=\"" + vmIpAddr + "\"/>"
 
-	replaceAll( evertestGetNetconfPath(testName),
+	replaceAll( getNetconfPath(testName),
 		    indent(3) + delEntry + NEWLN + indent(2) + "</dhcp>",
 		    "" )
 
 	if(not EVERTEST_SILENT):
 		print "Successfully unregistered VM from current Test (TID = " + testName + "):  { Name = " + vmName + " | IP = " + vmIpAddr + " }"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestUnregisterVm
+# EOF unregisterVm
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -331,12 +331,12 @@ def evertestUnregisterVm(testName, vmName):
 #	set testName
 #		- Name of the Test, that's corresponding Network shall be deleted
 # -------------------------------------------------------------------------------------------------------
-def evertestDestroyTestNetwork(testName):
+def destroyTestNetwork(testName):
 
 	print NEWLN + SEPLN + NEWLN + "Destroying Test Network: " + testName + "..."
 	
-	netconfPath = evertestNetworkDir() + "/netconf_" + testName + ".xml"
-	portmapPath = evertestNetworkDir() + "/portmap_" + testName + ".xml"
+	netconfPath = networkDir() + "/netconf_" + testName + ".xml"
+	portmapPath = networkDir() + "/portmap_" + testName + ".xml"
 	
 	if(os.path.isfile(netconfPath)):
 		os.remove(netconfPath)
@@ -352,16 +352,16 @@ def evertestDestroyTestNetwork(testName):
 
 	print SEPLN + NEWLN
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestDestroyTestNetwork
+# EOF destroyTestNetwork
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the IP Address of an existing VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmIpAddr(testName, vmName):
+def getVmIpAddr(testName, vmName):
 	
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	for node in root.iter():
 		if(node.tag == "host"):
 			if(node.get("name") == vmName):
@@ -370,16 +370,16 @@ def evertestGetVmIpAddr(testName, vmName):
 	print "Could not find IP Address Entry for VM: { Name = " + vmName + " }"
 	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetVmIpAddr
+# EOF getVmIpAddr
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the MAC Address of an existing VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmMacAddr(testName, vmName):
+def getVmMacAddr(testName, vmName):
 	
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	for node in root.iter():
 		if(node.tag == "host"):
 			if(node.get("name") == vmName):
@@ -388,16 +388,16 @@ def evertestGetVmMacAddr(testName, vmName):
 	print "Could not find Mac Address Entry for VM: { Name = " + vmName + " }"
 	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetVmMacAddr
+# EOF getVmMacAddr
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the dedicated Port Number of the VM
 # -------------------------------------------------------------------------------------------------------
-def evertestGetVmPort(testName, vmName, mode):
+def getVmMonitoringPort(testName, vmName, mode):
 
-	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
+	root = xmltree.parse(getPortmapPath(testName)).getroot()
 	if mode == "vm":
 		for node in root.iter():
 			if(node.tag == "entry"):
@@ -417,22 +417,22 @@ def evertestGetVmPort(testName, vmName, mode):
 #	print "Could not find dedicated Port No. Entry for VM: { Name = " + vmName + " }"
 #	return "???.???.???.???"
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetVmMacAddr
+# EOF getVmMacAddr
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Returns the lowest available Number for a new VM to register within the given Test's Network [2-254]
 # -------------------------------------------------------------------------------------------------------
-def evertestRequestVmNumber(testName):
+def requestVmNumber(testName):
 
 	usedNums = []
-	root = xmltree.parse(evertestGetNetconfPath(testName)).getroot()
+	root = xmltree.parse(getNetconfPath(testName)).getroot()
 	
 	# Find used VM Numbers
 	for node in root.iter():
 		if(node.tag == "host"):
-			usedNums.append(int(node.get("ip").replace("192.168.%d." % evertestGetTestSubnet(testName), "")))
+			usedNums.append(int(node.get("ip").replace("192.168.%d." % getTestSubnet(testName), "")))
 	
 	# Search for lowest VM Number available 
 	for num in range(2, 255):
@@ -443,7 +443,7 @@ def evertestRequestVmNumber(testName):
 	print "Error: All VM Spaces [2-%d] for this Testcase are already occupied!" % 254
 	return -1
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestRequestVmNumber
+# EOF requestVmNumber
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -451,15 +451,15 @@ def evertestRequestVmNumber(testName):
 # Go through the Folder containing all existing Network Configurations and return the Number of Networks
 # found.
 # -------------------------------------------------------------------------------------------------------
-def evertestGetTestCount():
+def getTestCount():
 
 	numXmlFiles = 0
-	for configFile in os.listdir(evertestNetworkDir()):
+	for configFile in os.listdir(networkDir()):
 		if(configFile.endswith(".xml")):
 			numXmlFiles += 1
 	return numXmlFiles / 2 # for each Test Network there are 2 xml Files (netconf_, portmap_)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestGetTestCount
+# EOF getTestCount
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -467,14 +467,14 @@ def evertestGetTestCount():
 # Go through all existing Network Configuration Files in order to find the lowest Subnet ID not yet in
 # use. [1-255]
 # -------------------------------------------------------------------------------------------------------
-def evertestRequestTestSubnet():
+def requestTestSubnet():
 
 	subnetsUsed = []
 
 	# Determine what Subnet IDs are in use yet
-	for configFile in os.listdir(evertestNetworkDir()):
+	for configFile in os.listdir(networkDir()):
 		if(configFile.startswith("netconf_") and configFile.endswith(".xml")):
-			subnetsUsed.append(evertestGetTestSubnet(str(configFile).replace("netconf_", "").replace(".xml", "")))
+			subnetsUsed.append(getTestSubnet(str(configFile).replace("netconf_", "").replace(".xml", "")))
 	
 	# Find lowest unoccupied Subnet ID 
 	for subnet in range(1, 254 + 1):
@@ -485,7 +485,7 @@ def evertestRequestTestSubnet():
 	print "Error: Max. Number of Subnets (%d) already in use!" % 254
 	return -1
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestRequestTestSubnet
+# EOF requestTestSubnet
 # -------------------------------------------------------------------------------------------------------
 
 
@@ -493,21 +493,21 @@ def evertestRequestTestSubnet():
 # Creates a new libvirt Domain (Test Network) .xml-File that will be used open VM Creation.
 # Subnet ID will be chosen automatically to be the lowest Subnet not yet in use.
 # -------------------------------------------------------------------------------------------------------
-def evertestSetupTestNetwork(testName):
+def setupTestNetwork(testName):
 
-	evertestCreateNetconfXml(testName, evertestRequestTestSubnet())
-	evertestCreatePortmapXml(testName)
+	createNetconfXml(testName, requestTestSubnet())
+	createPortmapXml(testName)
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestSetupTestNetwork
+# EOF setupTestNetwork
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Calculates the lower Boundary of the Port Number Range dedicated to the specified Test.
 # -------------------------------------------------------------------------------------------------------
-def evertestCalculateMinPort(testName):
+def calculateMinPort(testName):
 
-	subnet = evertestGetTestSubnet(testName)
+	subnet = getTestSubnet(testName)
 	minPort = EVERTEST_VM_PORT_BASE + (subnet - 1) * 253
 	increase = 0
 
@@ -518,16 +518,16 @@ def evertestCalculateMinPort(testName):
 
 	return minPort + increase
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestCalculateMinPort
+# EOF calculateMinPort
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Calculates the upper Boundary of the Port Number Range dedicated to the specified Test.
 # -------------------------------------------------------------------------------------------------------
-def evertestCalculateMaxPort(testName):
+def calculateMaxPort(testName):
 
-	minPort = evertestCalculateMinPort(testName)
+	minPort = calculateMinPort(testName)
 	maxPort = minPort + 252
 	increase = 0
 
@@ -538,20 +538,20 @@ def evertestCalculateMaxPort(testName):
 
 	return maxPort + increase
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestCalculateMinPort
+# EOF calculateMinPort
 # -------------------------------------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------------------------------------
 # Find a free Port in the Range dedicated to the specified Test.
 # -------------------------------------------------------------------------------------------------------
-def evertestRequestVmPort(testName):
+def requestVmPort(testName):
 
-	minPort = evertestCalculateMinPort(testName)
-	maxPort = evertestCalculateMaxPort(testName)
+	minPort = calculateMinPort(testName)
+	maxPort = calculateMaxPort(testName)
 	
 	usedPorts = []
-	root = xmltree.parse(evertestGetPortmapPath(testName)).getroot()
+	root = xmltree.parse(getPortmapPath(testName)).getroot()
 	
 	# Find used Port Numbers
 	for node in root.iter():
@@ -567,5 +567,5 @@ def evertestRequestVmPort(testName):
 	print "Error: All Ports in the valid Range of this Test Network are already occupied!"
 	return -1
 # -------------------------------------------------------------------------------------------------------
-# EOF evertestRequestVmPort
+# EOF requestVmPort
 # -------------------------------------------------------------------------------------------------------
