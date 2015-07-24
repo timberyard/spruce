@@ -73,7 +73,7 @@ Another important thing to add to your rc.local is `dpkg-reconfigure openssh-ser
 
 
 ###Start a testcase
-**Just this one command line:** ```sudo python spruce_test_handler.py -n=dummytest``` where you have to replace *testname* with the tests plain name / the name of the testfile without fileending.
+**Just this one command line:** ```sudo python spruce_test_handler.py -n=dummytest``` where you have to replace *dummytest* with the tests plain name / the name of the testfile without fileending.
 
 
 
