@@ -60,7 +60,7 @@ The basic dependencies you need to set up are the python packages the host also 
 
 Actually spruce has to be located in /mnt/ on the client machine. The most files are being sent to the client, when it starts up, what makes it way easier to update spruce on the host. Only one file, the **vm.py** has to be placed in /mnt/ before you can use the vm. It takes care that all dependencies are ok and handles the main test script. To start the file with the system just add the following line to your /etc/rc.local: `(cd /mnt/; /mnt/starter.sh &)`
 
-starter.sh has the be a simple executable shell file which just calls the vm.py:
+starter.sh has to be a simple executable shell file which just calls the vm.py:
 
 ``` sh
 #/bin/sh
