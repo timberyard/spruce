@@ -1,18 +1,59 @@
 Spruce - a distributed test runner
 ========
-##Spruce v0.1
+##Spruce v0.2
 
 Spruce is a framework for testing software in several ways on "on-demand" VMs.
 
-There are four main modules used as testing framework:
+Thist are the main script used as testing framework:
 
-1. spruce_test_handler.py - This modules creates VMs from templates and gives them all needed data.
-2. spruce_netcfg_host.py - This module rules networking stuff like creating virtual networks for every single testcase (full functions)
-3. spruce_netcfg_client.py - Same thing as _host.py, just less functions
-4. spruce_util.py - This modules does what its' name says: It provides utilities.
-5. spruce_monitor.py - Monitoring module
 
-Also there are:
+| Module | Description |
+|:--------:|:-------------|
+| spruce_test_handler.py | This modules creates VMs from templates and gives them all needed data. |
+| spruce_netcfg_host.py | This module rules networking stuff like creating virtual networks for every single testcase |
+| spruce_netcfg_client.py | Same thing as _host.py, just less functions for use on a vm |
+| spruce_util.py | This modules does what its' name says: It provides utilities. |
+| spruce_monitor.py | Monitoring module |
+| vm.py | The vm-side script runnig the test |
 
-1. vm.py - This is the script running on the vm that collects data and executes the test
-2. spruce-pkgmgr.jar - This little java applet lets the user create .test packages and place them at the host machine
+##How to set it up
+###Dependencies (for a Ubuntu 15.04 host)
+**Python:** ```sudo apt-get install python2.7, python-lxml, python-sendfile```
+
+**Virtualization:** ```sudo apt-get install libvirt-bin virt-manager libguestfs-dev libguestfs-tools```
+
+**Test scripts:** ```git clone https://github.com/timberyard/spruce``` -> *I recommend to clone to /var/spruce/*
+
+###Assemble a test package
+A test package consists of a simple .tar file. It's packed as following:
+
+```  
+dummytest.tar
+  |-- dummytest.conf
+  |-- scripts
+  |   |-- vm1.py
+  |   |-- vm2.py
+  |
+  |-- files
+  |   |-- somedependecy.py
+  |   |-- ...
+```  
+Let's start with the ***dummytest*.conf**, it's a simple xml-file, .conf is just for easier handling:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<rootElement>
+	<info vmcount='2'/>
+	<vm name="vm1" template="client_15.04" script="vm1.py"/>
+	<vm name="vm2" template="server_15.04" script="vm2.py"/>
+</rootElement>
+```
+The template attribute names the vm that is being cloned to run the test on it, vmcount tells the test handler how many vms he is handling.
+
+The **vm*.py** files are the scripts being executed by the vms as specified in the config. The can contain everything from `print "foo"` through to complex algorithms etc. In **/files/** you should store everything your test scripts require as for example your own python libraries or utility files.
+
+###Start a testcase
+**Just this one command line:** ```sudo python spruce_test_handler.py -n=dummytest``` where you have to replace *testname* with the tests plain name / the name of the testfile without fileending.
+
+
+
