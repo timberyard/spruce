@@ -47,7 +47,7 @@ from lxml import etree as xmltree
 from spruce_netcfg_host import *
 from spruce_monitor import collectMessages
 
-spruceVersion = "0.1"
+spruceVersion = "0.2"
 
 #--------------------------------------------------------------------------------------
 #Paths
