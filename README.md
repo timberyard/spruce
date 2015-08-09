@@ -56,4 +56,7 @@ The **vm*.py** files are the scripts being executed by the vms as specified in t
 **Just this one command line:** ```sudo python spruce_test_handler.py -n=dummytest``` where you have to replace *testname* with the tests plain name / the name of the testfile without fileending.
 
 
+##To do:
+- Add support for dedicated monitoring; sent logging either to VM-Host or to remote system, e.g. developers device
+
 
