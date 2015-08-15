@@ -47,6 +47,11 @@ from lxml import etree as xmltree
 from spruce_netcfg_host import *
 from spruce_monitor import collectMessages
 
+import paramiko
+from paramiko import SSHClient
+from scp import SCPClient
+import traceback
+
 spruceVersion = "0.2"
 
 #--------------------------------------------------------------------------------------
@@ -56,7 +61,7 @@ evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
 evertestRootPath	= "/home/jan/Schreibtisch/evertest/"
 evertestImgPath 	= "/var/lib/libvirt/images/"
-vmPrefix			= "evertest_vm_"
+vmPrefix			= "spruce_"
 boarder       		= "~~~~~~~~~~"
 # -------------------------------------------------------------------------------------
 # EOF Paths
@@ -159,43 +164,61 @@ def extractTest(testname):
 #--------------------------------------------------------------------------------------
 # Send the test files to the VM via ssh
 #--------------------------------------------------------------------------------------
+
 def sendTest(vmname, testname):
 	try:
+
+		class MissingFile(Exception):
+			def __init__(self, filename):
+				self.filename = filename
+
 		print boarder
 		vmip = getVmIpAddr(testname, vmname)
+
+		ssh = SSHClient()
+		ssh.load_system_host_keys()
+		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # Add targets host key to spruce server if unknown
+		ssh.connect(vmip, password='Galaxy123$', username="tester")
+		
+		scp = SCPClient(ssh.get_transport())
+
 		print "VM-Name: {}, VM-IP: {}".format(vmname, vmip)
 
 		filename = "{}{}.tar".format(evertestTestPath, testname)
 		if os.path.lexists(filename):
-			os.system("scp {} tester@{}:/mnt/{}.tar".format(filename, vmip, testname))
+			scp.put(filename, remote_path=b'/mnt/')
 		else:
-			print "{} does not exist! not sent!".format(filename)
+			raise MissingFile(filename)
 
 		filename = "{}netconf_{}.xml".format(evertestNetPath, testname)
 		if os.path.lexists(filename):
-			os.system("scp {} tester@{}:/mnt/{}.net".format(filename, vmip, testname))
+			scp.put(filename, remote_path=b'/mnt/{}.net'.format(testname))
 		else:
-			print "{} does not exist! not sent!".format(filename)
+			raise MissingFile(filename)
 
 		filename = "{}portmap_{}.xml".format(evertestNetPath, testname)
 		if os.path.lexists(filename):
-			os.system("scp {} tester@{}:/mnt/{}.ports".format(filename, vmip, testname))
+			scp.put(filename, remote_path=b'/mnt/{}.ports'.format(testname))
 		else:
-			print "{} does not exist! not sent!".format(filename)
+			raise MissingFile(filename)
 
 		filename = "{}spruce_netcfg_client.py".format(evertestRootPath)
 		if os.path.lexists(filename):
-			os.system("scp {} tester@{}:/mnt/spruce_netcfg_client.py".format(filename, vmip))
+			scp.put(filename, remote_path=b'/mnt/spruce_netcfg_client.py')
 		else:
-			print "{} does not exist! not sent!".format(filename)
+			raise MissingFile(filename)
 
 		filename = "{}spruce_util.py".format(evertestRootPath)
 		if os.path.lexists(filename):
-			os.system("scp {} tester@{}:/mnt/spruce_util.py".format(filename, vmip))
+			scp.put(filename, remote_path=b'/mnt/spruce_util.py')
 		else:
-			print "{} does not exist! not sent!".format(filename)
+			raise MissingFile(filename)
 
-	except:																					
+	except MissingFile as e:
+		print "{} does not exist! file not sent!".format(e.filename)
+
+	except:						
+		print(traceback.format_exc())															
 		e = sys.exc_info()[edl]
 		print "Error occoured in sendTest: \n" + str(e)
 		stat = 1
@@ -207,6 +230,7 @@ def sendTest(vmname, testname):
 def constructVm(templateID, hostname, testID, testfile):
 	try:
 		# Create VM by increasing (or picking the lowest unused) the number in "evertest_vm_$number" for VMNames
+		vmPrefix = testID + "_"
 		creationIndex = 1
 		string = "virt-clone -o {0} -n {1}{2} -f {3}{1}{2}.img".format(templateID, vmPrefix, str(creationIndex), evertestImgPath)
 		o = sub.Popen(string, shell=True, stdout=sub.PIPE, stderr=sub.STDOUT)
