@@ -27,6 +27,7 @@ EVERTEST_SOCKET_MODE_SEND 	= 0
 EVERTEST_SOCKET_MODE_RECV 	= 1
 EVERTEST_WORKER_ROOT_DIR	= "/mnt"
 HOST_IP 					= "192.168.0.226"
+HOST_IP						= "192.168.122.1"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
@@ -260,12 +261,13 @@ def breakSend(receiver, description):
 #--------------------------------------------------------------------------------------------------------
 #
 #--------------------------------------------------------------------------------------------------------
-def breakListen(rcvMessage):
+def breakListen(rcvMessage, timeout = None):
 	try:
 		myIp = "127.0.0.1"
 		buffer_size = 2048
 		message = "Got it."
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.settimeout(timeout)
 		s.bind(('', EVERTEST_TCP_FILE_PORT))
 		print "Now waiting for message"
 		s.listen(1)
@@ -279,6 +281,10 @@ def breakListen(rcvMessage):
 			conn.send(message)
 			print "Sent 'Got it' as answer. Going on now.."
 		conn.close()
+		return 0
+		
+	except timeout:
+		return 1
 	except:
 		e = sys.exc_info()[edl]
 		print "Error in breakListen: \n" + str(e)
@@ -286,21 +292,45 @@ def breakListen(rcvMessage):
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
 
+# def initExternalMonitor(exHost, exPort):
+# 	i = 1;
+# 	while false:
+# 		buffer_size = 1024
+# 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 		s.connect((exHost, exPort)) # <- Tuple? Why double brackets?
+# 		s.send(status)
+# 		response = s.recv(buffer_size)
+# 		s.close()
+# 		if response == "I'm here!":
+# 			return true
+# 		else:
+# 			if i < 3:
+# 				return false
+# 			else:
+# 				return 	# Possible? Want to exit loop after 3 failed tries
 
 #--------------------------------------------------------------------------------------------------------
-# 
+# Currently: Add support for dedicated monitoring host -> send logs to developers device instead/additional to the VM-Host
 #--------------------------------------------------------------------------------------------------------
-def sendStatus(status):
+def sendStatus(status, exHost="null", exPort="null"): # If host is specified by user, log copies will be sent to that ip -> if fail after 3 inital tries -> abort
 	try:
 		monitor_port = getVmMonitoringPort(getLocalTestId(), getHostname(), "test") # "test" represents the monitoring mode -> look at spruce_monitor.py
 		print "Monitor Port: " + str(monitor_port)
-		receiverIp = HOST_IP
 		buffer_size = 1024
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.connect((receiverIp, monitor_port))
+		s.connect((HOST_IP, monitor_port))
 		s.send(status)
 		data = s.recv(buffer_size)
 		s.close()
+
+#		if (exHost, exPort != "null" && initExternalMonitor(exHost, exPort) == true):
+#			pass # Insert function to send copy of messages
+#			buffer_size = 1024
+#			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#			s.connect((exHost, exPort)) # <- Tuple? Why double brackets?
+#			s.send(status)
+
+
 		print "Got answer: " + str(data)
 	except:
 		print(traceback.format_exc())
