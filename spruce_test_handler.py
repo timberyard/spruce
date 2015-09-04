@@ -167,63 +167,60 @@ def extractTest(testname):
 def sendTest(vmname, testname):
 	try:
 
-	# 	class MissingFile(Exception):
-	# 		def __init__(self, filename):
-	# 			self.filename = filename
+		class MissingFile(Exception):
+			def __init__(self, filename):
+				self.filename = filename
 
-	# 	print boarder
-	# 	vmip = getVmIpAddr(testname, vmname)
+		print boarder
+		vmip = getVmIpAddr(testname, vmname)
 
-	# 	ssh = paramiko.SSHClient()
-	# 	ssh.load_system_host_keys()
-	# 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # Add targets host key to spruce server if unknown
-	# 	ssh.connect(vmip, password='Galaxy123$', username="tester")
+		ssh = paramiko.SSHClient()
+		ssh.load_system_host_keys()
+		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # Add targets host key to spruce server if unknown
+		ssh.connect(vmip, password='Galaxy123$', username="tester")
 		
-	# 	scp = SCPClient(ssh.get_transport())
+		scp = SCPClient(ssh.get_transport())
 
-	# 	print "Send related files to {}, {}".format(vmname, vmip)
+		print "Send related files to {}, {}".format(vmname, vmip)
 
-	# 	filename = "{}{}.tar".format(evertestTestPath, testname)
-	# 	if os.path.lexists(filename):
-	# 		scp.put(filename, remote_path=b'/mnt/')
-	# 	else:
-	# 		raise MissingFile(filename)
+		filename = "{}{}.tar".format(evertestTestPath, testname)
+		if os.path.lexists(filename):
+			scp.put(filename, remote_path=b'/mnt/')
+		else:
+			raise MissingFile(filename)
 
-	# 	filename = "{}netconf_{}.xml".format(evertestNetPath, testname)
-	# 	if os.path.lexists(filename):
-	# 		scp.put(filename, remote_path=b'/mnt/{}.net'.format(testname))
-	# 	else:
-	# 		raise MissingFile(filename)
+		filename = "{}netconf_{}.xml".format(evertestNetPath, testname)
+		if os.path.lexists(filename):
+			scp.put(filename, remote_path=b'/mnt/{}.net'.format(testname))
+		else:
+			raise MissingFile(filename)
 
-	# 	filename = "{}portmap_{}.xml".format(evertestNetPath, testname)
-	# 	if os.path.lexists(filename):
-	# 		scp.put(filename, remote_path=b'/mnt/{}.ports'.format(testname))
-	# 	else:
-	# 		raise MissingFile(filename)
+		filename = "{}portmap_{}.xml".format(evertestNetPath, testname)
+		if os.path.lexists(filename):
+			scp.put(filename, remote_path=b'/mnt/{}.ports'.format(testname))
+		else:
+			raise MissingFile(filename)
 
-	# 	filename = "{}spruce_netcfg_client.py".format(evertestRootPath)
-	# 	if os.path.lexists(filename):
-	# 		scp.put(filename, remote_path=b'/mnt/spruce_netcfg_client.py')
-	# 	else:
-	# 		raise MissingFile(filename)
+		filename = "{}spruce_netcfg_client.py".format(evertestRootPath)
+		if os.path.lexists(filename):
+			scp.put(filename, remote_path=b'/mnt/spruce_netcfg_client.py')
+		else:
+			raise MissingFile(filename)
 
-	# 	filename = "{}spruce_util.py".format(evertestRootPath)
-	# 	if os.path.lexists(filename):
-	# 		scp.put(filename, remote_path=b'/mnt/spruce_util.py')
-	# 	else:
-	# 		raise MissingFile(filename)
+		filename = "{}spruce_util.py".format(evertestRootPath)
+		if os.path.lexists(filename):
+			scp.put(filename, remote_path=b'/mnt/spruce_util.py')
+		else:
+			raise MissingFile(filename)
 
-	# except MissingFile as e:
-	# 	print "{} does not exist! file not sent!".format(e.filename)
+	except MissingFile as e:
+		print "{} does not exist! file not sent!".format(e.filename)
 
-	# except:						
-	# 	print(traceback.format_exc())															
-	# 	e = sys.exc_info()[edl]
-	# 	print "Error occoured in sendTest: \n" + str(e)
-	# 	stat = 1
-		pass
-	except:
-		pass
+	except:						
+		print(traceback.format_exc())															
+		e = sys.exc_info()[edl]
+		print "Error occoured in sendTest: \n" + str(e)
+		stat = 1
 
 
 #--------------------------------------------------------------------------------------
