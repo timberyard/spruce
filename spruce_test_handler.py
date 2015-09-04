@@ -221,7 +221,7 @@ def sendTest(vmname, testname):
 	# 	e = sys.exc_info()[edl]
 	# 	print "Error occoured in sendTest: \n" + str(e)
 	# 	stat = 1
-	pass
+		pass
 
 
 #--------------------------------------------------------------------------------------
