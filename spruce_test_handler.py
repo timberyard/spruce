@@ -222,6 +222,8 @@ def sendTest(vmname, testname):
 	# 	print "Error occoured in sendTest: \n" + str(e)
 	# 	stat = 1
 		pass
+	except:
+		pass
 
 
 #--------------------------------------------------------------------------------------
