@@ -526,5 +526,3 @@ def verbose_ping(dest_addr, timeout = 2, count = 20, psize = 64):
 # 	average_time += p
 # average_time = average_time / len(ping)
 # resetNetwork("eth0")
-#
-sendStatus("bar")
