@@ -34,13 +34,14 @@
 # File I/O
 import sys
 import os
+import argparse
 import fileinput
 import subprocess as sub
 from threading import Thread
 
 #Tools
-import shutil
 import time
+import shutil
 import tarfile
 from lxml import etree as xmltree
 
@@ -48,13 +49,13 @@ from spruce_netcfg_host import *
 from spruce_monitor import collectMessages
 
 import paramiko
-from scp import SCPClient
 import traceback
+from scp import SCPClient
 
 spruceVersion = "0.2"
 
 #--------------------------------------------------------------------------------------
-#Paths
+# Paths
 #--------------------------------------------------------------------------------------
 evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
@@ -63,9 +64,10 @@ evertestImgPath 	= "/var/lib/libvirt/images/"
 vmPrefix			= "spruce_"
 boarder       		= "~~~~~~~~~~"
 # -------------------------------------------------------------------------------------
-# EOF Paths
+# Credentials
 # -------------------------------------------------------------------------------------
-
+localVmPassword = "evb"
+localVmUsername = "tester"
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: Explicit debug message
@@ -74,23 +76,6 @@ EVERTEST_DEBUG_LEVEL = 1
 edl = EVERTEST_DEBUG_LEVEL
 
 allVm = [] #All started VMs names are appended here to be handled later on destroying process
-
-# -------------------------------------------------------------------------------------------------------
-# Returns the Value assigned to a Command Line Parameter. (--param=value) 
-# If no Value was passed in, the specified default will be returned.
-# -------------------------------------------------------------------------------------------------------
-def handleShellParam(param, default):
-
-	for cmdarg in sys.argv:
-		if(("--" + param + "=") in cmdarg):
-			return str(cmdarg.replace(("--" + param + "="), ""))
-		elif(("-" + param + "=") in cmdarg):
-			return str(cmdarg.replace(("-" + param + "="), ""))
-		elif(("--" + param) in cmdarg):
-			return str(cmdarg.replace(("--"), ""))
-		elif(("-" + param) in cmdarg):
-			return str(cmdarg.replace(("-"), ""))
-	return default
 
 
 #--------------------------------------------------------------------------------------
@@ -177,7 +162,7 @@ def sendTest(vmname, testname):
 		ssh = paramiko.SSHClient()
 		ssh.load_system_host_keys()
 		ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # Add targets host key to spruce server if unknown
-		ssh.connect(vmip, password='Galaxy123$', username="tester")
+		ssh.connect(vmip, password=localVmPassword, username=localVmUsername)
 		
 		scp = SCPClient(ssh.get_transport())
 
@@ -383,24 +368,10 @@ def runTest(testname):
 		sys.exit("{} does not exist!".format(filename))
 	except:
 		e = sys.exc_info()[edl]
-		print "Error in run: \n" + str(e)
-		stat = 1
+		sys.exit("Error in run: \n" + str(e))
 
+parser = argparse.ArgumentParser(description="Spruce Test Handler by Jan Riedel")
+parser.add_argument('-n', '--name', help="test name", required=True)
+args = parser.parse_args()
 
-# Main call. Testname has to be given by --t="testname" (without quotes).
-givenTest = handleShellParam("n", 0)
-helpParam0 = handleShellParam("help", 0)
-helpParam1 = handleShellParam("h", 0)
-
-if givenTest != 0:
-	stat = 0
-	runTest(givenTest)
-	sys.exit(stat)
-
-if helpParam0 != 0 or helpParam1 != 0:
-	print "This help refers to spruce v{}.".format(spruceVersion)
-	print "Parameters:"
-	print "    -n or --name   : Defines the used .py testfile"
-	print "    -h or --help   : Displays this help"
-else:
-	sys.exit("No parameters given. Maybe you should have a look for the --help")
+runTest(args.name)
