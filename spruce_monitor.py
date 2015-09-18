@@ -10,6 +10,7 @@ import socket
 import thread
 import time
 import json
+import traceback
 from lxml import etree as xmltree
 from threading import Thread
 
@@ -17,11 +18,13 @@ from threading import Thread
 from spruce_netcfg_host import *
 
 hostIP = "192.168.0.226"
+hostIP = "192.168.122.1"
 
 #Paths
 netPath     = "/var/evertest/net/"
 testPath	= "/var/evertest/tests/"
-boarder 			= "~~~~~~~~~~"
+
+boarder       		= "~~~~~~~~~~"
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: explicit debug message
 #--------------------------------------------------------------------------------------
@@ -209,6 +212,7 @@ def collectMessages(givenTest):
 	except:
 		e = sys.exc_info()[dl]
 		print "Error in collectMessages: \n" + str(e)
+		print(traceback.format_exc())
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
