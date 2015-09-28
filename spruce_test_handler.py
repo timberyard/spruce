@@ -42,6 +42,7 @@ from threading import Thread
 #Tools
 import time
 import shutil
+import smbPull
 import tarfile
 from lxml import etree as xmltree
 
@@ -138,6 +139,7 @@ def extractTest(testname):
 		else:
 			raise IOError
 	except IOError:
+		print(traceback.format_exc())
 		sys.exit("No .tar package for the given test name found!")
 	except:
 		e = sys.exc_info()[edl]
@@ -148,6 +150,17 @@ def extractTest(testname):
 #--------------------------------------------------------------------------------------
 # Send the test files to the VM via ssh
 #--------------------------------------------------------------------------------------
+
+def repackTest(testname):
+	try:
+		packFolder = evertestTestPath + testname + "/"
+		output = packFolder + ".tar"
+		with tarfile.open(output, "w:gz") as tar:
+			tar.add(packFolder)
+		print("Repacked test with new files")
+	except:
+		e = sys.exc_info()[edl]
+		print "Error occoured while extracting testTar file: \n" + str(e)
 
 def sendTest(vmname, testname):
 	try:
@@ -356,9 +369,31 @@ def main(testname, filename):
 #--------------------------------------------------------------------------------------
 # Running the parameter-given test
 #--------------------------------------------------------------------------------------
-def runTest(testname):
+def runTest(testname, args):
 	try:
 		extractTest(testname) #Check if extract result 0
+		
+		if args.refresh:
+			if args.branch:
+				pass
+			else:
+				sys.exit("A branch has to be given to perform a joinRequest refresh!")
+
+			if args.commit:
+				pass
+			else:
+				sys.exit("A commit has to be given to perform a joinRequest refresh!")
+
+			if args.dist:
+				pass
+			else:
+				sys.exit("A distribution has to be given to perform a joinRequest refresh!")
+
+			directory = evertestTestPath + testname + "/files"
+			smbPull.main(["everbase_kernel"], args.branch, args.commit, args.dist, directory)
+
+			repackTest(testname)
+
 		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname) #not checked any more after this point
 		if os.path.lexists(filename):
 			main(testname, filename)
@@ -372,6 +407,11 @@ def runTest(testname):
 
 parser = argparse.ArgumentParser(description="Spruce Test Handler by Jan Riedel")
 parser.add_argument('-n', '--name', help="test name", required=True)
+parser.add_argument('-r', '--refresh', help="refresh joinRequest test files", action="store_true")
+parser.add_argument('-b', '--branch', help="refresh samba branch")
+parser.add_argument('-c', '--commit', help="refresh samba commit")
+parser.add_argument('-d', '--dist', help="refresh samba dist")
+
 args = parser.parse_args()
 
-runTest(args.name)
+runTest(args.name, args)
