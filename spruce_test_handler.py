@@ -154,7 +154,7 @@ def extractTest(testname):
 def repackTest(testname):
 	try:
 		packFolder = evertestTestPath + testname + "/"
-		output = packFolder + ".tar"
+		output = evertestTestPath + testname + ".tar"
 		with tarfile.open(output, "w:gz") as tar:
 			tar.add(packFolder)
 		print("Repacked test with new files")
