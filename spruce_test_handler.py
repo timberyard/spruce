@@ -156,11 +156,11 @@ def repackTest(testname):
 		packFolder = evertestTestPath + testname + "/"
 		output = evertestTestPath + testname + ".tar"
 		with tarfile.open(output, "w:gz") as tar:
-			tar.add(packFolder)
+			tar.add(packFolder, arcname=os.path.basename(packFolder))
 		print("Repacked test with new files")
 	except:
 		e = sys.exc_info()[edl]
-		print "Error occoured while extracting testTar file: \n" + str(e)
+		print "Error occoured while repacking testTar file: \n" + str(e)
 
 def sendTest(vmname, testname):
 	try:
@@ -281,9 +281,7 @@ def main(testname, filename):
 		#Important data
 
 		#Analyse and echo out
-		print "ID of running testcase: {}".format(testname)
 		vmcount = str(countVm(testname))
-		print "Number of VM created in this testcase: {}".format(vmcount)
 
 		#Parse testID and all hostnames to ip-API to create initXML 
 		setupTestNetwork(testname)
@@ -390,7 +388,8 @@ def runTest(testname, args):
 				sys.exit("A distribution has to be given to perform a joinRequest refresh!")
 
 			directory = evertestTestPath + testname + "/files"
-			smbPull.main(["everbase_kernel"], args.branch, args.commit, args.dist, directory)
+			smbPull.main(["everbase_kernel"], args.branch, args.commit[0:7], args.dist, directory)
+			smbPull.main(["everbase.so"], args.branch, args.commit[0:7], args.dist, directory, "lib/ruby/1.9.1/x86_64-linux")
 
 			repackTest(testname)
 
