@@ -13,6 +13,7 @@ import json
 import traceback
 from lxml import etree as xmltree
 from threading import Thread
+from junit_xml import TestSuite, TestCase
 
 #Import evertest modules
 from spruce_netcfg_host import *
@@ -58,7 +59,7 @@ class testData:
 		self.finished = False
 		self.status = "Never started"
 		self.duration = "??:??:??"
-		self.outfile = self.vmname + "_results.json"
+		self.outfile = self.vmname + "_results.xml"
 		self.warnings = []
 		self.errors = []
 		self.infos = []
@@ -73,7 +74,7 @@ class testData:
 		#self.infos.append(["INFO", infoMsg])# -> try now appending only message itself
 		self.infos.append(infoMsg)
 
-	def writeResults(self):
+	def writeResults(self, testname):
 		if self.outfile != "":
 			if len(self.errors) != 0:
 				self.status = "Failed"
@@ -88,38 +89,22 @@ class testData:
 		else:
 			print "No outfile specified! Writing aborted."
 
-	def writeJenkins(self, testname):
-		if self.outfile != "":
-			if len(self.errors) != 0:
-				self.status = "Failed"
-			elif len(self.warnings) != 0:
-				self.status = "Success with warnings"
-			else:
-				self.status = "Success"
 
-			result = xmltree.Element("testcase", name=self.vmname, status=self.status, time=str(self.duration), classname=testname)
-			jresults.append(result)
-			return result
+	def writeJenkins(self, testname):
+		test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), 120.00, [ls for ls in self.infos], [ls for ls in self.warnings])
+		jresults.append(test_case)
+		
 
 def writeJenskinsResults(testname, resfile):
 	if resfile != "":
 		failures = 0 #init
 		errors = 0 #init
 
-		# for jresult in jresults:
-		# 	if (jresult.get("status") != "Failed"):
-		# 		errors += 1
-		
-		uRoot = xmltree.Element("testsuites", tests=str(len(jresults)), failures="0", disabled="0", errors="0", timestamp="0", time="0", name="AllTests") #just placeholder, will be prettied up later
-		
-		root = xmltree.Element("testsuite", name=testname, tests=str(len(jresults)), failures="0", disabled="0", errors="0", time="0")
-		for jresult in jresults:
-			root.append(jresult)
-		uRoot.append(root)
+	ts = TestSuite("Spruce Backend Test", jresults)	
+	with open("/home/tester/jenkins/workspace/backend_spruce_tests_release/aggResults.xml", 'w') as f:
+		TestSuite.to_file(f, [ts], prettyprint=False)		
 
-		xmltree.dump(uRoot)
-		tree = xmltree.ElementTree(uRoot)
-		tree.write(resfile, pretty_print=True, encoding="utf-8", xml_declaration=1)
+
 
 def writeAggregatedResults(testname, resfile):
 	if resfile != "":
@@ -136,6 +121,7 @@ def writeAggregatedResults(testname, resfile):
 			json.dump(dic, outfile, indent=3, sort_keys=True)
 		print boarder
 		print "Wrote aggregated results to " + str(resfile)
+
 	else:
 		print "No outfile specified! Writing aborted."
 #--------------------------------------------------------------------------------------------------------
@@ -198,7 +184,7 @@ def collectMessages(givenTest):
 					tData.finished = True
 					if all(result.finished == True for key, result in results.items()):
 						for k, v in results.items():
-							v.writeResults()
+							v.writeResults(givenTest)
 						cnt = 1
 						finished = 1
 				else:
