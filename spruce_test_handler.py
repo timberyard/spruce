@@ -60,7 +60,7 @@ spruceVersion = "0.2"
 #--------------------------------------------------------------------------------------
 evertestNetPath     = "/var/evertest/net/"
 evertestTestPath	= "/var/evertest/tests/"
-evertestRootPath	= "/home/jan/Schreibtisch/evertest/"
+evertestRootPath	= "/var/spruce/"
 evertestImgPath 	= "/var/lib/libvirt/images/"
 vmPrefix			= "spruce_"
 boarder       		= "~~~~~~~~~~"
@@ -388,8 +388,8 @@ def runTest(testname, args):
 				sys.exit("A distribution has to be given to perform a joinRequest refresh!")
 
 			directory = evertestTestPath + testname + "/files"
-			smbPull.main(["everbase_kernel"], args.branch, args.commit[0:7], args.dist, directory)
-			smbPull.main(["everbase.so"], args.branch, args.commit[0:7], args.dist, directory, "lib/ruby/1.9.1/x86_64-linux")
+			smbPull.main(["everbase_kernel"], args.branch, str(args.commit[0:7]), args.dist, directory)
+			smbPull.main(["everbase.so"], args.branch, str(args.commit[0:7]), args.dist, directory, "lib/ruby/1.9.1/x86_64-linux")
 
 			repackTest(testname)
 
