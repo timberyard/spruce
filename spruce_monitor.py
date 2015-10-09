@@ -37,15 +37,18 @@ dl = DEBUG_LEVEL
 
 def readVmName(xmlPath, ip):
 	try:
+		if not os.path.lexists(xmlPath):
+			raise IOError("{} does not exist!".format(xmlPath))
+
 		root = xmltree.parse(xmlPath).getroot()
 		for child in root.iter():
 			if (child.tag == "host"):
 				if(child.get("ip") == ip):
 					name = child.get("name")
 					return name
-	except:
-		e = sys.exc_info()[dl]
-		print "Error in readVmName: \n" + str(e)
+	except Exception:
+		print("An error occured in spruce_monitor.readVmName!")
+		raise
 #--------------------------------------------------------------------------------------------------------
 
 results = {}
@@ -76,66 +79,88 @@ class testData:
 		self.infos.append(infoMsg)
 
 	def writeResults(self, testname):
-		if self.logmode == "jenkins":
-			self.writeJenkins(testname)
-		elif self.logmode == "json":
-			self.writeJson(testname)
+		try:
+			if self.logmode == "jenkins":
+				self.writeJenkins(testname)
+			elif self.logmode == "json":
+				self.writeJson(testname)
+		except Exception:
+			print("An error occured in spruce_monitor.writeResults!")
+			raise
 
 	def writeJson(self, testname):
-		if self.outfile != "":
-			if len(self.errors) != 0:
-				self.status = "Failed"
-			elif len(self.warnings) != 0:
-				self.status = "Success with warnings"
+		try:
+			if self.outfile != "":
+				if len(self.errors) != 0:
+					self.status = "Failed"
+				elif len(self.warnings) != 0:
+					self.status = "Success with warnings"
+				else:
+					self.status = "Success"
+				dic = {"vm" : {"name" : self.vmname,"status" : self.status, "running time" : str(self.duration), "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
+				dics[self.vmname] = {"name" : self.vmname, "running time" : str(self.duration), "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
+				with open(self.outfile, 'w') as outfile:
+					json.dump(dic, outfile, indent=3, sort_keys=True)
 			else:
-				self.status = "Success"
-			dic = {"vm" : {"name" : self.vmname,"status" : self.status, "running time" : str(self.duration), "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
-			dics[self.vmname] = {"name" : self.vmname, "running time" : str(self.duration), "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
-			with open(self.outfile, 'w') as outfile:
-				json.dump(dic, outfile, indent=3, sort_keys=True)
-		else:
-			print "No outfile specified! Writing aborted."
-
+				print "No outfile specified! Writing aborted."
+		except Exception:
+			print("An error occured in spruce_monitor.writeJson!")
+			raise
 
 	def writeJenkins(self, testname):
-		test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), self.duration, [ls for ls in self.infos], [ls for ls in self.warnings])
-		jresults.append(test_case)
-		
+		try:
+			test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), self.duration, [ls for ls in self.infos], [ls for ls in self.warnings])
+			jresults.append(test_case)
+		except Exception:
+			print("An error occured in spruce_monitor.writeJenkins!")
+			raise
 
 def writeAggregatedResults(testname, resfile, logmode):
-	if logmode == "jenkins":
-		writeJenskinsResults(testname, resfile)
-	elif logmode == "json":
-		writeJsonResults(testname, resfile)
+	try:
+		if logmode == "jenkins":
+			writeJenskinsResults(testname, resfile)
+		elif logmode == "json":
+			writeJsonResults(testname, resfile)
+	except Exception:
+		print("An error occured in spruce_monitor.writeAggregatedResults!")
+		raise
 
 def writeJenskinsResults(testname, resfile):
-	if resfile != "":
-		failures = 0 #init
-		errors = 0 #init
+	try:
+		if resfile != "":
+			failures = 0 #init
+			errors = 0 #init
 
-	ts = TestSuite("Spruce Backend Test", jresults)	
-	with open("/home/tester/jenkins/workspace/backend_spruce_tests_release/aggResults.xml", 'w') as f:
-		TestSuite.to_file(f, [ts], prettyprint=False)		
-
+		ts = TestSuite("Spruce Backend Test", jresults)	
+		with open("/home/tester/jenkins/workspace/backend_spruce_tests_release/aggResults.xml", 'w') as f:
+			TestSuite.to_file(f, [ts], prettyprint=False)
+	except Exception:
+		print("An error occured in spruce_monitor.writeJenskinsResults!")
+		raise	
 
 def writeJsonResults(testname, resfile):
-	if resfile != "":
-		warnings = 0
-		errors = 0
+	try:
+		if resfile != "":
+			warnings = 0
+			errors = 0
 
-		for k, v in results.items():
-			warnings = warnings + len(v.warnings)
-		for k, v in results.items():
-			errors = errors + len(v.errors)
+			for k, v in results.items():
+				warnings = warnings + len(v.warnings)
+			for k, v in results.items():
+				errors = errors + len(v.errors)
 
-		dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : testname, "warnings" : warnings, "errors" : errors}}}
-		with open(resfile, 'w') as outfile:
-			json.dump(dic, outfile, indent=3, sort_keys=True)
-		print boarder
-		print "Wrote aggregated results to " + str(resfile)
+			dic = {"test" : {"vm" : [v for k, v in dics.items()], "general" : {"name" : testname, "warnings" : warnings, "errors" : errors}}}
+			with open(resfile, 'w') as outfile:
+				json.dump(dic, outfile, indent=3, sort_keys=True)
+			print boarder
+			print "Wrote aggregated results to " + str(resfile)
 
-	else:
-		print "No outfile specified! Writing aborted."
+		else:
+			raise IOError("No outfile specified! Writing aborted.")
+	except Exception:
+		print("An error occured in spruce_monitor.writeJenskinsResults!")
+		raise
+
 #--------------------------------------------------------------------------------------------------------
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
@@ -146,6 +171,11 @@ def collectMessages(givenTest, logmode, debug=False):
 		port = getVmMonitoringPort(givenTest, "foo", mode)
 		xmlPath = "{}netconf_{}.xml".format(netPath, givenTest)
 		confXmlPath = "{0}{1}/{1}.conf".format(testPath, givenTest)
+
+		if not os.path.lexists(xmlPath):
+			raise IOError("{} does not exist!".format(xmlPath))
+		elif not os.path.lexists(confXmlPath):
+			raise IOError("{} does not exist!".format(confXmlPath))
 
 		# Append one testData() object per VM to the results dictionary
 		root = xmltree.parse(confXmlPath).getroot()
@@ -208,10 +238,10 @@ def collectMessages(givenTest, logmode, debug=False):
 			conn.close()
 
 		writeAggregatedResults(givenTest, "aggResults.json", logmode)
-	except:
-		e = sys.exc_info()[dl]
-		print "Error in collectMessages: \n" + str(e)
-		print(traceback.format_exc())
+
+	except Exception:
+		print("An error occured in spruce_monitor.collectMessages!")
+		raise
 #--------------------------------------------------------------------------------------------------------
 # EOF evertestWait
 #--------------------------------------------------------------------------------------------------------
