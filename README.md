@@ -2,7 +2,7 @@ Spruce - a distributed test runner
 ========
 ##Spruce v0.2
 
-Spruce is a framework for testing software in several ways on "on-demand" VMs, written with Python v2.7.
+Spruce is a framework for testing software in several ways on "on-demand" VMs, written with Python v2.7. It also won't be transmitted to Python v3 < in near future, because of lacking libvirt features and APIs.
 
 Thist are the main script used as testing framework:
 
