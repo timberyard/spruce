@@ -168,9 +168,9 @@ def collectMessages(givenTest, logmode, debug=False):
 				conn, addr = s.accept()
 				hostname = str(readVmName(xmlPath, addr[0]))
 
-				print boarder
 				if debug == True:
 					print "Received status from {0} [{1}] {{\"{2}\"}}".format(str(addr), hostname, time.strftime("%H:%M:%S"))
+					print boarder
 
 				data = conn.recv(buffer_size)
 				if not data: 
