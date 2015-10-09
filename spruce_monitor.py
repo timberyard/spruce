@@ -191,7 +191,7 @@ def collectMessages(givenTest, logmode):
 				elif "info" in status.lower():
 					tData.appendInfo(sMessage)
 				elif "time" in status.lower():
-					tData.duration = "{} sec".format(sMessage)
+					tData.duration = float(sMessage)
 				elif "finish" in status.lower():
 					tData.finished = True
 					if all(result.finished == True for key, result in results.items()):
