@@ -2,8 +2,8 @@
 # File I/O
 import sys
 import os
-import logging
 import time
+import logging
 import subprocess as sub
 import shutil
 import tarfile
@@ -17,6 +17,9 @@ workingDir = "/mnt/"
 filesPath  = "/mnt/"
 
 HOST_IP = "192.168.0.226"
+HOST_IP = "192.168.122.1"
+
+startTime = time.time()
 
 while os.path.isfile("/mnt/spruce_util.py") != True: #util file is the last one being sent to the vm
 	time.sleep(1)
@@ -86,7 +89,7 @@ try:
 	runs = "python -B " + scriptFile
 	try:
 		logging.info("Trying to execute test script")
-		# run = sub.Popen(runs, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix #new Bug: piping leads to stdin: no tty Error.. suddenly.
+		# run = sub.Popen(runs, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE) #Changed sub.PIPE to sys.stdout referring to http://stackoverflow.com/a/20196781 -> broken Pipe [32] Error fix
 		run = sub.Popen(runs, shell=True)
 		out = run.communicate()
 		logging.info(out[0])
@@ -109,7 +112,8 @@ finally:
 #	command = "scp /mnt/vm.log jan@{}:/home/jan/Schreibtisch/everbase/".format(HOST_IP)
 #	process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 #	process.communicate()
-	
+	endTime = (time.time() - startTime)
+	sendStatus("[time] - {}".format(math.ceil(endTime*100000)/100000)) # round to 5 decimal places	
 	sendStatus("[finish]")
 	sys.exit()
 

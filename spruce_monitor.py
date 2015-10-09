@@ -58,7 +58,7 @@ class testData:
 		self.vmname = vmname
 		self.finished = False
 		self.status = "Never started"
-		self.duration = "??:??:??"
+		self.duration = 9001
 		self.outfile = self.vmname + "_results.xml"
 		self.warnings = []
 		self.errors = []
@@ -89,8 +89,8 @@ class testData:
 				self.status = "Success with warnings"
 			else:
 				self.status = "Success"
-			dic = {"vm" : {"name" : self.vmname,"status" : self.status, "running time" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
-			dics[self.vmname] = {"name" : self.vmname, "running time" : self.duration, "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
+			dic = {"vm" : {"name" : self.vmname,"status" : self.status, "running time" : str(self.duration), "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}}
+			dics[self.vmname] = {"name" : self.vmname, "running time" : str(self.duration), "output" : {"warning" : [ls for ls in self.warnings], "info" : [ls for ls in self.infos], "error" : [ls for ls in self.errors]}}
 			with open(self.outfile, 'w') as outfile:
 				json.dump(dic, outfile, indent=3, sort_keys=True)
 		else:
@@ -98,7 +98,7 @@ class testData:
 
 
 	def writeJenkins(self, testname):
-		test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), 120.00, [ls for ls in self.infos], [ls for ls in self.warnings])
+		test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), self.duration, [ls for ls in self.infos], [ls for ls in self.warnings])
 		jresults.append(test_case)
 		
 
