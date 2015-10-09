@@ -54,7 +54,7 @@ jresults = []
 
 class testData:
 	
-	def __init__(self, vmname):
+	def __init__(self, vmname, logmode):
 		self.vmname = vmname
 		self.finished = False
 		self.status = "Never started"
@@ -63,6 +63,7 @@ class testData:
 		self.warnings = []
 		self.errors = []
 		self.infos = []
+		self.logmode = logmode
 
 	def appendWarning(self, warningMsg):
 		self.warnings.append(["WARNING", warningMsg])
@@ -75,6 +76,12 @@ class testData:
 		self.infos.append(infoMsg)
 
 	def writeResults(self, testname):
+		if self.logmode == "jenkins":
+			self.writeJenkins(testname)
+		elif self.logmode == "json":
+			self.writeJson(testname)
+
+	def writeJson(self, testname):
 		if self.outfile != "":
 			if len(self.errors) != 0:
 				self.status = "Failed"
@@ -95,6 +102,12 @@ class testData:
 		jresults.append(test_case)
 		
 
+def writeAggregatedResults(testname, resfile, logmode):
+	if logmode == "jenkins":
+		writeJenskinsResults(testname, resfile)
+	elif logmode == "json":
+		writeJsonResults(testname, resfile)
+
 def writeJenskinsResults(testname, resfile):
 	if resfile != "":
 		failures = 0 #init
@@ -105,8 +118,7 @@ def writeJenskinsResults(testname, resfile):
 		TestSuite.to_file(f, [ts], prettyprint=False)		
 
 
-
-def writeAggregatedResults(testname, resfile):
+def writeJsonResults(testname, resfile):
 	if resfile != "":
 		warnings = 0
 		errors = 0
@@ -128,7 +140,7 @@ def writeAggregatedResults(testname, resfile):
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def collectMessages(givenTest):
+def collectMessages(givenTest, logmode):
 	try:
 		mode = "test"
 		port = getVmMonitoringPort(givenTest, "foo", mode)
@@ -140,7 +152,7 @@ def collectMessages(givenTest):
 		for child in root:
 			if (child.tag == "vm"):
 				name = str(child.get("name"))
-				results[name] = testData(name) #the testData objects created here have no names - they are just accessible via the index of results[]
+				results[name] = testData(name, logmode) #the testData objects created here have no names - they are just accessible via the index of results[]
 				print "Added {} to result list.".format(name)
 		cnt = 0
 		while (cnt == 0):
@@ -194,7 +206,7 @@ def collectMessages(givenTest):
 
 			conn.close()
 
-		writeAggregatedResults(givenTest, "aggResults.json")
+		writeAggregatedResults(givenTest, "aggResults.json", logmode)
 	except:
 		e = sys.exc_info()[dl]
 		print "Error in collectMessages: \n" + str(e)

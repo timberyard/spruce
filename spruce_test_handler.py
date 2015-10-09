@@ -275,7 +275,7 @@ def constructVm(templateID, hostname, testID, testfile):
 #--------------------------------------------------------------------------------------
 # Main (get informations, trigger VM-constructions,...)
 #--------------------------------------------------------------------------------------
-def main(testname, filename):
+def main(testname, filename, logmode):
 	try:
 
 		#Important data
@@ -305,7 +305,7 @@ def main(testname, filename):
 
 		print boarder
 
-		t = Thread(target=collectMessages, args=(testname, ))
+		t = Thread(target=collectMessages, args=(testname, logmode))
 		t.start()
 
 		for child in root:
@@ -372,20 +372,18 @@ def runTest(testname, args):
 		extractTest(testname) #Check if extract result 0
 		
 		if args.refresh:
-			if args.branch:
-				pass
-			else:
-				sys.exit("A branch has to be given to perform a joinRequest refresh!")
+			if not args.branch:
+				sys.exit("A branch has to be given to perform a joinRequest refresh!")	
 
-			if args.commit:
-				pass
-			else:
+			if not args.commit:
 				sys.exit("A commit has to be given to perform a joinRequest refresh!")
+				
 
-			if args.dist:
-				pass
-			else:
+			if not args.dist:
 				sys.exit("A distribution has to be given to perform a joinRequest refresh!")
+				
+			if not (args.output == "jenkins") or (args.output == "json"):
+				sys.exit("An output type has to be given!")
 
 			directory = evertestTestPath + testname + "/files"
 			smbPull.main(["everbase_kernel"], args.branch, str(args.commit[0:7]), args.dist, directory)
@@ -395,7 +393,7 @@ def runTest(testname, args):
 
 		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname) #not checked any more after this point
 		if os.path.lexists(filename):
-			main(testname, filename)
+			main(testname, filename, args.output)
 		else:
 			raise IOError
 	except IOError:
@@ -410,6 +408,7 @@ parser.add_argument('-r', '--refresh', help="refresh joinRequest test files", ac
 parser.add_argument('-b', '--branch', help="refresh samba branch")
 parser.add_argument('-c', '--commit', help="refresh samba commit")
 parser.add_argument('-d', '--dist', help="refresh samba dist")
+parser.add_argument('-o', '--output', help="has to be jenkins or json", required=True )
 
 args = parser.parse_args()
 
