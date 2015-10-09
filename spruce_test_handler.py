@@ -85,17 +85,18 @@ allVm = [] #All started VMs names are appended here to be handled later on destr
 def countVm(testname):
 	try:
 		path = "{0}{1}/{1}.conf".format(evertestTestPath, testname)
+		if not os.path.lexists(path):
+			raise IOError("{} does not exist!".format(path))
+
 		root = xmltree.parse(path).getroot()
 		for child in root:
 			if(child.tag == "info"):
 				value = child.get("vmcount")
 				return value
 
-	except:
-		e = sys.exc_info()[edl]
-		print "Error in countVm: \n" + str(e)
-		stat = 1
-
+	except Exception:
+		print("An error occured whilst counting the VMs!")
+		raise
 
 #--------------------------------------------------------------------------------------
 # Place own mac and network name in VM xml
@@ -104,30 +105,27 @@ def configureVmNetwork(testID, vmname, hostname):
 	try:
 		mac = getVmMacAddr(testID, hostname)
 		path = "/etc/libvirt/qemu/{}.xml".format(vmname)
-		if os.path.lexists(path):
-			tree = xmltree.parse(path)
-			root = tree.getroot()
-			for child in root.iter():
-				if(child.tag == "mac"):
-					child.set("address", mac)
-				if(child.tag == "source"):
-					child.set("network", testID)
-			tree.write(path)
-			defineVM = "virsh define /etc/libvirt/qemu/{}.xml".format(vmname)
-			define = sub.Popen(defineVM, shell=True, stdout=sub.PIPE)
-			define.wait()
-		else:
-			raise IOError
-	except IOError:
-		sys.exit("{} does not exist!".format(path))
-	except:
-		e = sys.exc_info()[edl]
-		print "Error in configureVmNetwork: \n" + str(e)
-		stat = 1
+		if not os.path.lexists(path):
+			raise IOError("{} does not exist!".format(path))
 
+		tree = xmltree.parse(path)
+		root = tree.getroot()
+		for child in root.iter():
+			if(child.tag == "mac"):
+				child.set("address", mac)
+			if(child.tag == "source"):
+				child.set("network", testID)
+		tree.write(path)
+		defineVM = "virsh define /etc/libvirt/qemu/{}.xml".format(vmname)
+		define = sub.Popen(defineVM, shell=True, stdout=sub.PIPE)
+		define.wait()
+
+	except Exception:
+		print("An error occured whilst configuring the VMs ({}) network!".format(vmname))
+		raise
 
 #--------------------------------------------------------------------------------------
-# Unzip the test tar file
+# Unzip the test .tar file
 #--------------------------------------------------------------------------------------
 def extractTest(testname):
 	try:
@@ -137,20 +135,15 @@ def extractTest(testname):
 			tfile = tarfile.open(extractString)
 			tfile.extractall(extractPath)
 		else:
-			raise IOError
-	except IOError:
-		print(traceback.format_exc())
-		sys.exit("No .tar package for the given test name found!")
-	except:
-		e = sys.exc_info()[edl]
-		print "Error occoured while extracting testTar file: \n" + str(e)
-		stat = 1
+			raise IOError("No .tar package for the given test name found!")
 
+	except Exception:
+		print("An error occured whilst extracting the test .tar!")
+		raise
 
 #--------------------------------------------------------------------------------------
-# Send the test files to the VM via ssh
+# Repack the test .tar file with updated dependency files
 #--------------------------------------------------------------------------------------
-
 def repackTest(testname):
 	try:
 		packFolder = evertestTestPath + testname + "/"
@@ -158,17 +151,16 @@ def repackTest(testname):
 		with tarfile.open(output, "w:gz") as tar:
 			tar.add(packFolder, arcname=os.path.basename(packFolder))
 		print("Repacked test with new files")
-	except:
-		e = sys.exc_info()[edl]
-		print "Error occoured while repacking testTar file: \n" + str(e)
 
+	except Exception:
+		print("An error occured whilst repacking the test .tar!")
+		raise
+
+#--------------------------------------------------------------------------------------
+# Send the test files to the VM via ssh
+#--------------------------------------------------------------------------------------
 def sendTest(vmname, testname):
 	try:
-
-		class MissingFile(Exception):
-			def __init__(self, filename):
-				self.filename = filename
-
 		print boarder
 		vmip = getVmIpAddr(testname, vmname)
 
@@ -185,40 +177,35 @@ def sendTest(vmname, testname):
 		if os.path.lexists(filename):
 			scp.put(filename, remote_path=b'/mnt/')
 		else:
-			raise MissingFile(filename)
+			raise IOError("Missing file: {}".format(filename))
 
 		filename = "{}netconf_{}.xml".format(evertestNetPath, testname)
 		if os.path.lexists(filename):
 			scp.put(filename, remote_path=b'/mnt/{}.net'.format(testname))
 		else:
-			raise MissingFile(filename)
+			raise IOError("Missing file: {}".format(filename))
 
 		filename = "{}portmap_{}.xml".format(evertestNetPath, testname)
 		if os.path.lexists(filename):
 			scp.put(filename, remote_path=b'/mnt/{}.ports'.format(testname))
 		else:
-			raise MissingFile(filename)
+			raise IOError("Missing file: {}".format(filename))
 
 		filename = "{}spruce_netcfg_client.py".format(evertestRootPath)
 		if os.path.lexists(filename):
 			scp.put(filename, remote_path=b'/mnt/spruce_netcfg_client.py')
 		else:
-			raise MissingFile(filename)
+			raise IOError("Missing file: {}".format(filename))
 
 		filename = "{}spruce_util.py".format(evertestRootPath)
 		if os.path.lexists(filename):
 			scp.put(filename, remote_path=b'/mnt/spruce_util.py')
 		else:
-			raise MissingFile(filename)
+			raise IOError("Missing file: {}".format(filename))
 
-	except MissingFile as e:
-		print "{} does not exist! file not sent!".format(e.filename)
-
-	except:						
-		print(traceback.format_exc())															
-		e = sys.exc_info()[edl]
-		print "Error occoured in sendTest: \n" + str(e)
-		stat = 1
+	except Exception:						
+		print("An error occured sending files to the VM ({})!".format(vmname))
+		raise
 
 
 #--------------------------------------------------------------------------------------
@@ -266,10 +253,9 @@ def constructVm(templateID, hostname, testID, testfile):
 		sendTest(hostname, testID)
 
 
-	except:
-		e = sys.exc_info()[edl]
-		print "Error in constructVm: \n" + str(e)
-		stat = 1
+	except Exception:
+		print("An error occured constructing an VM!")
+		raise
 
 
 #--------------------------------------------------------------------------------------
@@ -277,9 +263,6 @@ def constructVm(templateID, hostname, testID, testfile):
 #--------------------------------------------------------------------------------------
 def main(testname, filename, logmode):
 	try:
-
-		#Important data
-
 		#Analyse and echo out
 		vmcount = str(countVm(testname))
 
@@ -320,9 +303,8 @@ def main(testname, filename, logmode):
 		t.join() # Blocks test_handler until the threads have finished and prevents early vm removal 
 
 	except:
-		e = sys.exc_info()[edl]
-		print "Error in main: \n" + str(e)
-		stat = 1
+		print("Error in main!")
+		raise
 
 	finally:
 		#Shut down and delete VMs / remove networking filesx
@@ -373,17 +355,16 @@ def runTest(testname, args):
 		
 		if args.refresh:
 			if not args.branch:
-				sys.exit("A branch has to be given to perform a joinRequest refresh!")	
+				raise ValueError("A branch has to be given to perform a joinRequest refresh!")
 
 			if not args.commit:
-				sys.exit("A commit has to be given to perform a joinRequest refresh!")
+				raise ValueError("A commit has to be given to perform a joinRequest refresh!")
 				
-
 			if not args.dist:
-				sys.exit("A distribution has to be given to perform a joinRequest refresh!")
+				raise ValueError("A distribution has to be given to perform a joinRequest refresh!")
 				
 			if not (args.output == "jenkins") or (args.output == "json"):
-				sys.exit("An output type has to be given!")
+				raise ValueError("An output type has to be given!")
 
 			directory = evertestTestPath + testname + "/files"
 			smbPull.main(["everbase_kernel"], args.branch, str(args.commit[0:7]), args.dist, directory)
@@ -395,12 +376,14 @@ def runTest(testname, args):
 		if os.path.lexists(filename):
 			main(testname, filename, args.output)
 		else:
-			raise IOError
+			raise IOError("{} does not exist!".format(filename))
+
 	except IOError:
-		sys.exit("{} does not exist!".format(filename))
-	except:
-		e = sys.exc_info()[edl]
-		sys.exit("Error in run: \n" + str(e))
+		sys.exit(traceback.format_exc())
+
+	except Exception:
+		sys.exit(traceback.format_exc())
+
 
 parser = argparse.ArgumentParser(description="Spruce Test Handler by Jan Riedel")
 parser.add_argument('-n', '--name', help="test name", required=True)
