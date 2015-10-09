@@ -140,7 +140,7 @@ def writeJsonResults(testname, resfile):
 # Function receiving the live status from all running VMs (success, fail..)
 # 	-> have to be sorted and analyzed / maybe over 2. module in another process and then passing to core 
 #--------------------------------------------------------------------------------------------------------
-def collectMessages(givenTest, logmode):
+def collectMessages(givenTest, logmode, debug=False):
 	try:
 		mode = "test"
 		port = getVmMonitoringPort(givenTest, "foo", mode)
@@ -169,7 +169,8 @@ def collectMessages(givenTest, logmode):
 				hostname = str(readVmName(xmlPath, addr[0]))
 
 				print boarder
-				print "Received status from {0} [{1}] {{\"{2}\"}}".format(str(addr), hostname, time.strftime("%H:%M:%S"))
+				if debug == True:
+					print "Received status from {0} [{1}] {{\"{2}\"}}".format(str(addr), hostname, time.strftime("%H:%M:%S"))
 
 				data = conn.recv(buffer_size)
 				if not data: 
