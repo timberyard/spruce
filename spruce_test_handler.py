@@ -368,6 +368,7 @@ def runTest(testname, args):
 
 			directory = evertestTestPath + testname + "/files"
 			smbPull.main(["everbase_kernel"], args.branch, str(args.commit[0:7]), args.dist, directory)
+			smbPull.main(["everbase_filesystem"], args.branch, str(args.commit[0:7]), args.dist, directory)
 			smbPull.main(["everbase.so"], args.branch, str(args.commit[0:7]), args.dist, directory, "lib/ruby/1.9.1/x86_64-linux")
 
 			repackTest(testname)
@@ -377,9 +378,6 @@ def runTest(testname, args):
 			main(testname, filename, args.output)
 		else:
 			raise IOError("{} does not exist!".format(filename))
-
-	except IOError:
-		sys.exit(traceback.format_exc())
 
 	except Exception:
 		sys.exit(traceback.format_exc())
