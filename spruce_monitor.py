@@ -215,6 +215,8 @@ def collectMessages(givenTest, logmode, debug=False):
 				else:
 					sMessage = "*no message transmitted*"
 
+				print "Received status from {0} [{1}]: {2}".format(str(addr), hostname, sMessage)
+
 				if "warning" in status.lower():
 					tData.appendWarning(sMessage)
 				elif "error" in status.lower():
