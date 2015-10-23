@@ -109,7 +109,7 @@ class testData:
 
 	def writeJenkins(self, testname):
 		try:
-			test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), self.duration, [ls for ls in self.infos], [ls for ls in self.warnings])
+			test_case = TestCase(self.vmname, "{}.{}".format("backend", testname), self.duration, [ls for ls in self.infos], [ls for ls in self.errors])
 			jresults.append(test_case)
 		except Exception:
 			print("An error occured in spruce_monitor.writeJenkins!")
