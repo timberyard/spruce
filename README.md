@@ -1,6 +1,6 @@
 Spruce - a distributed test runner
 ========
-##Spruce v0.2
+##Spruce v0.3
 
 Spruce is a framework for testing software in several ways on "on-demand" VMs, written with Python v2.7. It also won't be transmitted to Python v3 < in near future, because of lacking libvirt features and APIs.
 
@@ -16,6 +16,7 @@ Thist are the main script used as testing framework:
 | spruce_monitor.py | Monitoring module |
 | vm.py | The vm-side script runnig the test |
 | scp.py | A utility file from [the Github scp.py repository](https://github.com/jbardin/scp.py) |
+| smbPull.py | A small utility file that allows to pull actual commits from a samba server |
 
 ##How to set it up
 ###Dependencies (for a Ubuntu 15.04 host)
