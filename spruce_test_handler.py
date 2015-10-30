@@ -53,7 +53,7 @@ import paramiko
 import traceback
 from scp import SCPClient
 
-spruceVersion = "0.2"
+spruceVersion = "0.3"
 
 #--------------------------------------------------------------------------------------
 # Paths
@@ -67,8 +67,8 @@ boarder       		= "~~~~~~~~~~"
 # -------------------------------------------------------------------------------------
 # Credentials
 # -------------------------------------------------------------------------------------
-localVmPassword = "evb"
-localVmUsername = "tester"
+localVmUsername = "" # Your password and use to log in to the VMs
+localVmPassword = ""
 
 #--------------------------------------------------------------------------------------
 # Set EVETEST_DEBUG_LEVEL TO - 0: Short debug message; 1: Explicit debug message
@@ -366,12 +366,14 @@ def runTest(testname, args):
 			if not (args.output == "jenkins") or (args.output == "json"):
 				raise ValueError("An output type has to be given!")
 
+			### Additional files to be pulled from a samba server
 			directory = evertestTestPath + testname + "/files"
 			smbPull.main(["everbase_kernel"], args.branch, str(args.commit[0:7]), args.dist, directory)
 			smbPull.main(["everbase_filesystem"], args.branch, str(args.commit[0:7]), args.dist, directory)
 			smbPull.main(["everbase.so"], args.branch, str(args.commit[0:7]), args.dist, directory, "lib/ruby/1.9.1/x86_64-linux")
+			###
 
-			repackTest(testname)
+			repackTest(testname) #Override the old files with the new ones
 
 		filename = "{0}{1}/{1}.conf".format(evertestTestPath, testname) #not checked any more after this point
 		if os.path.lexists(filename):
