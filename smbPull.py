@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 import traceback
-from smb.SMBConnection import SMBConnection
+from smb.SMBConnection import SMBConnection	# Use it this way: https://pythonhosted.org/pysmb/api/smb_SMBConnection.html
 
 
 def main(files, branch, commit, dist, directory, addPath="bin"):
@@ -12,10 +12,10 @@ def main(files, branch, commit, dist, directory, addPath="bin"):
 			os.makedirs(directory)
 
 		for f in files:
-			conn = SMBConnection("builds", "builds", "phoenix", "EVERBASE")
-			conn.connect("192.168.55.60")
+			conn = SMBConnection("", "", "", "") # Samba credentials
+			conn.connect("") #Samba IP
 
-			folder = conn.listPath("ci-builds", 'backend/{}/'.format(branch), pattern='*')
+			folder = conn.listPath("ci-builds", 'backend/{}/'.format(branch), pattern='*') # Example path
 			foldername = None
 			for filename in folder:
 				if commit in filename.filename:
@@ -33,7 +33,7 @@ def main(files, branch, commit, dist, directory, addPath="bin"):
 		raise
 
 if __name__ == "__main__":
-	main(["everbase_kernel"], "master", "d8066ca", "linux_ubuntu-14.04_x86-64_gcc_release", "/var/evertest/pulledFiles")
+	main(["someFilename"], "master", "b726tza", "linux_ubuntu-14.04_x86-64_release", "/") #An example smbPull
 
 
 ## Syntax example: python smbPull.py -b master -c d8066ca -d linux_ubuntu-14.04_x86-64_gcc_release -f everbase_filesystem everbase_kernel ##
