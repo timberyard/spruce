@@ -22,6 +22,10 @@ Thist are the main script used as testing framework:
 ###Dependencies (for a Ubuntu 15.04 host)
 **Python:** ```sudo apt-get install python2.7 python-lxml python-sendfile python2.7-paramiko```
 
+To create jenkins compatible output you also have to set up [python-junit-xml](https://pypi.python.org/pypi/junit-xml).
+
+In case you also have to use smbPull.py, you also want to place the nmb/ and smb/ folders from [pySMB](https://pypi.python.org/pypi/pysmb) in Spruce's root directory!
+
 **Virtualization:** ```sudo apt-get install libvirt-bin virt-manager libguestfs-dev libguestfs-tools```
 
 **Test scripts:** ```git clone https://github.com/timberyard/spruce``` -> *I recommend to clone to /var/spruce/*
